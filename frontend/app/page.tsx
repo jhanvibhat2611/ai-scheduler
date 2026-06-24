@@ -3,6 +3,7 @@ import ProgressRing from "../components/ProgressRing";
 import Card from "../components/Card";
 import FloatingYumee from "../components/FloatingYumee";
 import QuickActions from "../components/QuickActions";
+import YumeePanel from "../components/YumeePanel";
 
 export default function Home() {
   return (
@@ -105,6 +106,7 @@ export default function Home() {
         </p>
       </Card>
 
+      <YumeePanel />
       <FloatingYumee />
     </main>
   );

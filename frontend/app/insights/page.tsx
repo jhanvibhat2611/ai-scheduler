@@ -1,31 +1,46 @@
+import Card from "../../components/Card";
+
 export default function InsightsPage() {
   return (
     <main className="min-h-screen bg-[#0F172A] text-white p-6 pb-24">
-
       <h1 className="text-3xl font-bold mb-6">
-        Patterns I've Learned
+        Productivity Insights
       </h1>
 
       <div className="space-y-4">
 
-        <div className="bg-[#1E293B] p-5 rounded-3xl">
-          You focus best between 6 PM and 9 PM.
-        </div>
+        <Card>
+          <h2 className="text-xl font-semibold">
+            Completion Rate
+          </h2>
 
-        <div className="bg-[#1E293B] p-5 rounded-3xl">
-          Workouts increase task completion by 80%.
-        </div>
+          <p className="text-5xl font-bold text-blue-400 mt-4">
+            78%
+          </p>
+        </Card>
 
-        <div className="bg-[#1E293B] p-5 rounded-3xl">
-          DSA is your most consistent habit.
-        </div>
+        <Card>
+          <h2 className="text-xl font-semibold">
+            Best Productivity Window
+          </h2>
 
-        <div className="bg-[#1E293B] p-5 rounded-3xl">
-          You tend to postpone tasks scheduled before 10 AM.
-        </div>
+          <p className="text-slate-300 mt-3">
+            4 PM - 7 PM
+          </p>
+        </Card>
+
+        <Card>
+          <h2 className="text-xl font-semibold">
+            Yumee Observation
+          </h2>
+
+          <p className="text-slate-300 mt-3">
+            You tend to complete deep work tasks
+            more consistently after physical activity.
+          </p>
+        </Card>
 
       </div>
-
     </main>
   );
 }
