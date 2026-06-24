@@ -1,19 +1,34 @@
+import Header from "../components/Header";
+import ProgressRing from "../components/ProgressRing";
+import Card from "../components/Card";
+import FloatingYumee from "../components/FloatingYumee";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#0F172A] text-white p-6 pb-24">
+      <Header />
 
-      <h1 className="text-4xl font-bold mb-6">
-        Good Evening, Jhanvi 👋
-      </h1>
+      <Card>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-slate-400">Today's Progress</p>
 
-      <div className="bg-[#1E293B] rounded-3xl p-6 mb-4">
-        <p className="text-slate-400">Today's Progress</p>
-        <h2 className="text-5xl font-bold mt-2 text-blue-400">
-          72%
-        </h2>
-      </div>
+            <p className="text-slate-300 mt-2">
+              5 tasks completed
+            </p>
 
-      <div className="bg-[#1E293B] rounded-3xl p-6 mb-4">
+            <p className="text-slate-500">
+              2 tasks pending
+            </p>
+          </div>
+
+          <ProgressRing />
+        </div>
+      </Card>
+
+      <div className="h-4" />
+
+      <Card>
         <h2 className="text-xl font-semibold mb-3">
           Upcoming Tasks
         </h2>
@@ -27,25 +42,29 @@ export default function Home() {
             Hackathon • 8 PM
           </div>
         </div>
-      </div>
+      </Card>
 
-      <div className="bg-[#1E293B] rounded-3xl p-6 mb-4">
+      <div className="h-4" />
+
+      <Card>
         <h2 className="text-xl font-semibold mb-3">
           Active Goals
         </h2>
 
         <div className="space-y-3">
           <div className="bg-[#334155] p-3 rounded-xl">
-            🎯 Morgan Stanley Internship
+            Morgan Stanley Internship
           </div>
 
           <div className="bg-[#334155] p-3 rounded-xl">
-            🎯 Fitness Journey
+            Fitness Journey
           </div>
         </div>
-      </div>
+      </Card>
 
-      <div className="bg-[#1E293B] rounded-3xl p-6">
+      <div className="h-4" />
+
+      <Card>
         <h2 className="text-xl font-semibold mb-3">
           Yumee Insight
         </h2>
@@ -53,8 +72,9 @@ export default function Home() {
         <p className="text-slate-300">
           You complete 80% more tasks after workouts.
         </p>
-      </div>
+      </Card>
 
+      <FloatingYumee />
     </main>
   );
 }
