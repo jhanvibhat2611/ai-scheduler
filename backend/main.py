@@ -36,8 +36,14 @@ class HardConstraint(BaseModel):
     start_time: str
     end_time: str
 
+class FreeSlot(BaseModel):
+    label: str
+    start_time: str
+    end_time: str
 
 class UserData(BaseModel):
+    wake_time: str
+    sleep_time: str
     hard_constraints: list[HardConstraint]
     soft_constraints: list
     goals: list[Goal]
@@ -102,16 +108,161 @@ def get_days(times_per_week):
 
     return []
 
+def get_free_slots(
+    wake_time,
+    sleep_time,
+    calendar_events
+):
+
+    free_slots = []
+
+    wake = datetime.strptime(wake_time, "%H:%M")
+    sleep = datetime.strptime(sleep_time, "%H:%M")
+
+    constraints = sorted(
+        calendar_events,
+        key=lambda x: x.start_time
+    )
+
+    current = wake
+
+    for constraint in constraints:
+
+        start = datetime.strptime(
+            constraint.start_time,
+            "%H:%M"
+        )
+
+        end = datetime.strptime(
+            constraint.end_time,
+            "%H:%M"
+        )
+
+        if current < start:
+
+            free_slots.append({
+                "label": label_slot(current),
+                "start": current,
+                "end": start
+            })
+
+        current = max(current, end)
+
+    if current < sleep:
+
+        free_slots.append({
+            "label": label_slot(current),
+            "start": current,
+            "end": sleep
+        })
+
+    return free_slots
+
+def label_slot(start_time):
+
+    hour = start_time.hour
+
+    if 5 <= hour < 12:
+        return "Morning"
+
+    elif 12 <= hour < 17:
+        return "Afternoon"
+
+    elif 17 <= hour < 21:
+        return "Evening"
+
+    else:
+        return "Night"
+
+def schedule_ai_plan(ai_plan, free_slots):
+
+    schedule = []
+
+    for item in ai_plan["plan"]:
+
+        placed = False
+
+        for slot in free_slots:
+
+            if slot["label"] != item["preferred_time"]:
+                continue
+
+            start = slot["start"]
+
+            end = start + timedelta(
+                minutes=item["duration"]
+            )
+
+            if end <= slot["end"]:
+
+                schedule.append(
+                    {
+                        "task": item["task"],
+                        "day": "Monday",
+                        "start_time": start.strftime("%H:%M"),
+                        "end_time": end.strftime("%H:%M")
+                    }
+                )
+
+                slot["start"] = end
+
+                placed = True
+
+                break
+
+        if not placed:
+
+            for slot in free_slots:
+
+                start = slot["start"]
+
+                end = start + timedelta(
+                    minutes=item["duration"]
+                )
+
+                if end <= slot["end"]:
+                    schedule.append(
+                        {
+                            "task": item["task"],
+                            "day": "Monday",
+                            "start_time": start.strftime("%H:%M"),
+                            "end_time": end.strftime("%H:%M")
+                        }
+                    )
+
+                    slot["start"] = end
+
+                    placed = True
+
+                    break
+
+            if not placed:
+                schedule.append(
+                    {
+                        "task": item["task"],
+                        "day": "Monday",
+                        "start_time": "Not Scheduled",
+                        "end_time": "-"
+                    }
+                )
+
+    return schedule
+
 class CalendarEvent(BaseModel):
     name: str
     start_time: str
     end_time: str
 
 
+class PlannerTask(BaseModel):
+    name: str
+    duration: int
+
+
 class AIScheduleRequest(BaseModel):
     preferences: dict
     calendar: list[CalendarEvent]
-    tasks: list
+    tasks: list[PlannerTask]
 
 @app.post("/generate-schedule")
 def generate_schedule(data: UserData):
@@ -197,12 +348,12 @@ You know:
 Your responsibilities are:
 
 1. Prioritize the tasks.
-2. Decide the best part of the day
-   (Morning / Afternoon / Evening / Night).
-3. Explain your reasoning.
-4. Respect existing calendar events.
-5. Minimize context switching.
-6. Keep the schedule realistic.
+2. Preserve the duration of every task.
+3. Decide the best part of the day.
+4. Explain your reasoning.
+5. Respect existing calendar events.
+6. Minimize context switching.
+7. Keep the schedule realistic.
 
 User Preferences:
 
@@ -214,7 +365,7 @@ Existing Calendar:
 
 Tasks:
 
-{json.dumps(data.tasks, indent=2)}
+{json.dumps([task.model_dump() for task in data.tasks], indent=2)}
 
 Return ONLY valid JSON.
 
@@ -224,15 +375,17 @@ Format:
   "plan": [
     {{
       "task": "DSA Practice",
+      "duration": 90,
       "priority": 1,
       "preferred_time": "Evening",
       "reason": "The user has peak focus after college."
     }},
     {{
       "task": "Workout",
+      "duration": 45,
       "priority": 2,
       "preferred_time": "Morning",
-      "reason": "Exercise improves concentration for later study."
+      "reason": "Exercise improves concentration."
     }}
   ]
 }}
@@ -255,4 +408,20 @@ Return JSON only.
     text = text.replace("```", "")
     text = text.strip()
 
-    return json.loads(text)
+    plan = json.loads(text)
+
+    free_slots = get_free_slots(
+        data.preferences["wake_time"],
+        data.preferences["sleep_time"],
+        data.calendar
+    )
+
+    schedule = schedule_ai_plan(
+        plan,
+        free_slots
+    )
+
+    return {
+        "ai_plan": plan,
+        "schedule": schedule
+    }
