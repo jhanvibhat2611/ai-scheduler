@@ -5,9 +5,18 @@ import json
 from fastapi import FastAPI
 from pydantic import BaseModel
 from datetime import datetime, timedelta
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 load_dotenv()
+print("API KEY:", os.getenv("GEMINI_API_KEY"))
 
 client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
@@ -264,6 +273,20 @@ class AIScheduleRequest(BaseModel):
     calendar: list[CalendarEvent]
     tasks: list[PlannerTask]
 
+class GoalPlanRequest(BaseModel):
+    goal: str
+    deadline: str | None = None
+
+
+class GoalTask(BaseModel):
+    name: str
+    duration: int
+    times_per_week: int
+
+
+class GoalPlanResponse(BaseModel):
+    tasks: list[GoalTask]
+
 @app.post("/generate-schedule")
 def generate_schedule(data: UserData):
 
@@ -425,3 +448,74 @@ Return JSON only.
         "ai_plan": plan,
         "schedule": schedule
     }
+
+@app.post("/generate-goal-plan")
+def generate_goal_plan(data: GoalPlanRequest):
+
+    prompt = f"""
+You are Yumee, an AI executive assistant.
+
+A user has the following goal.
+
+Goal:
+{data.goal}
+
+Deadline:
+{data.deadline if data.deadline else "No deadline"}
+
+Break this goal into recurring actionable tasks.
+
+For every task provide:
+
+- name
+- duration (minutes)
+- times_per_week
+
+Rules:
+
+- Be realistic.
+- Keep the schedule sustainable.
+- Prefer recurring habits instead of one-time tasks.
+- Suggest only the most important tasks.
+- Return between 3 and 7 tasks.
+- Return ONLY valid JSON.
+
+Example:
+
+{{
+    "tasks":[
+        {{
+            "name":"DSA Practice",
+            "duration":90,
+            "times_per_week":5
+        }},
+        {{
+            "name":"Projects",
+            "duration":120,
+            "times_per_week":2
+        }},
+        {{
+            "name":"Resume Building",
+            "duration":60,
+            "times_per_week":1
+        }}
+    ]
+}}
+
+Do NOT use markdown.
+
+Return JSON only.
+"""
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
+
+    text = response.text.strip()
+
+    text = text.replace("```json", "")
+    text = text.replace("```", "")
+    text = text.strip()
+
+    return json.loads(text)
