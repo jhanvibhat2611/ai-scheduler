@@ -39,34 +39,54 @@ export default function Step6({
   >>({});
 
   function updateDayTime(
-    day: string,
-    field: string,
-    value: string
-  ) {
+      day: string,
+      field: string,
+      value: string
+    ) {
 
-    setDayTimes((prev) => ({
+      setDayTimes((prev) => ({
 
-      ...prev,
+        ...prev,
 
-      [day]: {
+        [day]: {
 
-        startHour: prev[day]?.startHour ?? "09",
-        startMinute: prev[day]?.startMinute ?? "00",
-        startPeriod: prev[day]?.startPeriod ?? "AM",
+          startHour: prev[day]?.startHour ?? "09",
+          startMinute: prev[day]?.startMinute ?? "00",
+          startPeriod: prev[day]?.startPeriod ?? "AM",
 
-        endHour: prev[day]?.endHour ?? "05",
-        endMinute: prev[day]?.endMinute ?? "00",
-        endPeriod: prev[day]?.endPeriod ?? "PM",
+          endHour: prev[day]?.endHour ?? "05",
+          endMinute: prev[day]?.endMinute ?? "00",
+          endPeriod: prev[day]?.endPeriod ?? "PM",
 
-        ...prev[day],
+          ...prev[day],
 
-        [field]: value,
+          [field]: value,
 
-      },
+        },
 
-    }));
+      }));
 
-  }
+    }
+
+  function convertTo24Hour(
+      hour: string,
+      minute: string,
+      period: string
+    ) {
+
+      let h = parseInt(hour);
+
+      if (period === "PM" && h !== 12) {
+        h += 12;
+      }
+
+      if (period === "AM" && h === 12) {
+        h = 0;
+      }
+
+      return `${String(h).padStart(2, "0")}:${minute}`;
+
+    }
 
   return (
 
@@ -203,53 +223,67 @@ export default function Step6({
       )}
 
       <button
-        onClick={() =>
+          onClick={() =>
+            onSave({
 
-          onSave({
+              commitment,
 
-            commitment,
+              sameTime,
 
-            sameTime,
+              days: sameTime
 
-            days: sameTime
+                ? days.map((day) => ({
 
-              ? days.map((day) => ({
+                    day,
 
-                  day,
+                    start: convertTo24Hour(
+                      hour,
+                      minute,
+                      period
+                    ),
 
-                  start: `${hour}:${minute} ${period}`,
+                    end: convertTo24Hour(
+                      endHour,
+                      endMinute,
+                      endPeriod
+                    ),
 
-                  end: `${endHour}:${endMinute} ${endPeriod}`,
+                  }))
 
-                }))
+                : days.map((day) => ({
 
-              : days.map((day) => ({
+                    day,
 
-                  day,
+                    start: convertTo24Hour(
+                      dayTimes[day]?.startHour ?? "09",
+                      dayTimes[day]?.startMinute ?? "00",
+                      dayTimes[day]?.startPeriod ?? "AM"
+                    ),
 
-                  start: `${dayTimes[day]?.startHour ?? "09"}:${dayTimes[day]?.startMinute ?? "00"} ${dayTimes[day]?.startPeriod ?? "AM"}`,
+                    end: convertTo24Hour(
+                      dayTimes[day]?.endHour ?? "05",
+                      dayTimes[day]?.endMinute ?? "00",
+                      dayTimes[day]?.endPeriod ?? "PM"
+                    ),
 
-                  end: `${dayTimes[day]?.endHour ?? "05"}:${dayTimes[day]?.endMinute ?? "00"} ${dayTimes[day]?.endPeriod ?? "PM"}`,
+                  })),
 
-                })),
-
-          })
-
-        }
-        className="
-          w-full
-          mt-12
-          bg-violet-600
-          hover:bg-violet-500
-          transition
-          py-4
-          rounded-2xl
-          text-lg
-          font-semibold
-        "
-      >
-        Continue
-      </button>
+            })
+          }
+          className="
+            w-full
+            mt-12
+            bg-violet-600
+            hover:bg-violet-500
+            transition
+            py-4
+            rounded-2xl
+            text-lg
+            font-semibold
+          "
+        >
+          Continue
+        </button>
 
     </div>
 
