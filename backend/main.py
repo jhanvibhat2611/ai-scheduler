@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from memory import save_task_result, build_ai_context
+from memory import build_ai_context
 
 app = FastAPI()
 app.add_middleware(
@@ -474,8 +475,22 @@ Return JSON only.
 @app.post("/generate-goal-plan")
 def generate_goal_plan(data: GoalPlanRequest):
 
+    memory_context = build_ai_context()
+
     prompt = f"""
 You are Yumee, an AI executive assistant.
+
+User Behaviour History:
+
+{memory_context}
+
+Use this history to personalize your recommendations.
+
+Guidelines:
+
+- If the user frequently skips long sessions, break them into shorter sessions.
+- If the user consistently completes a task, you may increase its frequency slightly.
+- If there is no previous history, ignore these instructions.
 
 A user has the following goal.
 

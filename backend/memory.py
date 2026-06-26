@@ -106,7 +106,42 @@ def get_user_patterns():
 
 def build_ai_context():
 
-    patterns = get_user_patterns()
+    docs = (
+        db.collection("memory")
+        .document("history")
+        .collection("events")
+        .stream()
+    )
+
+    patterns = {}
+
+    for doc in docs:
+
+        item = doc.to_dict()
+
+        task = item["task"]
+
+        if task not in patterns:
+
+            patterns[task] = {
+                "completed": 0,
+                "skipped": 0,
+                "durations": [],
+            }
+
+        if item.get("completed"):
+
+            patterns[task]["completed"] += 1
+
+            if item.get("actual_duration"):
+
+                patterns[task]["durations"].append(
+                    item["actual_duration"]
+                )
+
+        else:
+
+            patterns[task]["skipped"] += 1
 
     if not patterns:
 
@@ -114,13 +149,24 @@ def build_ai_context():
 
     text = "User Behaviour History:\n\n"
 
-    for item in patterns:
+    for task, stats in patterns.items():
+
+        average_duration = None
+
+        if stats["durations"]:
+
+            average_duration = round(
+                sum(stats["durations"])
+                /
+                len(stats["durations"]),
+                1
+            )
 
         text += (
-            f"- {item['task']}: "
-            f"Completed {item['times_completed']} times, "
-            f"Skipped {item['times_skipped']} times, "
-            f"Average Duration = {item['average_duration']} minutes.\n"
+            f"- {task}: "
+            f"Completed {stats['completed']} times, "
+            f"Skipped {stats['skipped']} times, "
+            f"Average Duration = {average_duration} minutes.\n"
         )
 
     return text
