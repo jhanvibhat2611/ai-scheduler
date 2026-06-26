@@ -11,6 +11,12 @@ import Step5 from "./components/Step5";
 import Step6 from "./components/Step6";
 import Step7 from "./components/Step7";
 import Step8 from "./components/Step8";
+import { db } from "@/lib/firebase";
+
+import {
+  collection,
+  addDoc,
+} from "firebase/firestore";
 
 import {
   generateGoalPlan,
@@ -246,9 +252,13 @@ export default function OnboardingPage() {
 
                   console.log(response);
 
-                  alert("🎉 Schedule generated successfully!");
+                  for (const task of response.tasks) {
+                    await addDoc(collection(db, "tasks"), task);
+                  }
 
-                  router.push("/");
+                  alert("🎉 Schedule saved to Firebase!");
+
+                  router.push("/schedule");
 
                 } catch (error) {
 

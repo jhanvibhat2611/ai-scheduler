@@ -1,0 +1,10 @@
+venv/
+backend/.env
+backend/firebase_key.json
+backend/memory.json
+backend/schedule.json
+
+__pycache__/
+.idea/
+.next/
+node_modules/

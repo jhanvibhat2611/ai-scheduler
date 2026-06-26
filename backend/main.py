@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
+import json
+from memory import save_task_result, build_ai_context
 
 app = FastAPI()
 app.add_middleware(
@@ -293,11 +295,8 @@ def generate_schedule(data: UserData):
     schedule = []
 
     if data.hard_constraints:
-
         start_time_str = data.hard_constraints[0].end_time
-
     else:
-
         start_time_str = "18:00"
 
     day_times = {
@@ -307,8 +306,17 @@ def generate_schedule(data: UserData):
         "Thursday": datetime.strptime(start_time_str, "%H:%M"),
         "Friday": datetime.strptime(start_time_str, "%H:%M"),
         "Saturday": datetime.strptime(start_time_str, "%H:%M"),
-        "Sunday": datetime.strptime(start_time_str, "%H:%M")
+        "Sunday": datetime.strptime(start_time_str, "%H:%M"),
     }
+
+    color_cycle = [
+        "violet",
+        "green",
+        "orange",
+        "blue",
+    ]
+
+    color_index = 0
 
     for goal in data.goals:
 
@@ -327,16 +335,30 @@ def generate_schedule(data: UserData):
                 schedule.append(
                     {
                         "day": day,
-                        "task": task.name,
-                        "start_time": start_time.strftime("%H:%M"),
-                        "end_time": end_time.strftime("%H:%M")
+                        "title": task.name,
+                        "start": start_time.strftime("%H:%M"),
+                        "end": end_time.strftime("%H:%M"),
+                        "tag": goal.name,
+                        "color": color_cycle[
+                            color_index % len(color_cycle)
+                        ],
+                        "completed": False,
                     }
                 )
 
+                color_index += 1
+
                 day_times[day] = end_time
 
+    with open("schedule.json", "w") as f:
+        json.dump(
+            {"tasks": schedule},
+            f,
+            indent=4,
+        )
+
     return {
-        "schedule": schedule
+        "tasks": schedule
     }
 
 @app.get("/test-gemini")
@@ -519,3 +541,26 @@ Return JSON only.
     text = text.strip()
 
     return json.loads(text)
+
+@app.get("/schedule")
+def get_schedule():
+
+    with open("schedule.json", "r") as f:
+        return json.load(f)
+
+from datetime import datetime
+
+@app.post("/complete-task")
+def complete_task(data: dict):
+
+    save_task_result(
+        task_name=data["task"],
+        planned_start=data["planned_start"],
+        planned_end=data["planned_end"],
+        completed=True,
+        actual_duration=data.get("actual_duration"),
+    )
+
+    return {
+        "message": "Task completed successfully."
+    }
