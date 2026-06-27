@@ -1,5 +1,6 @@
 from datetime import datetime
 from firebase_db import db
+from learning_engine import analyze_patterns
 
 MEMORY_FILE = "memory.json"
 
@@ -106,67 +107,37 @@ def get_user_patterns():
 
 def build_ai_context():
 
-    docs = (
-        db.collection("memory")
-        .document("history")
-        .collection("events")
-        .stream()
-    )
+    analysis = analyze_patterns()
 
-    patterns = {}
+    insights = analysis["insights"]
 
-    for doc in docs:
+    if not insights:
 
-        item = doc.to_dict()
+        return "No previous user history."
 
-        task = item["task"]
+    text = f"""
+User Behaviour Summary
 
-        if task not in patterns:
+Overall Completion Rate:
+{analysis['overall_completion']}%
 
-            patterns[task] = {
-                "completed": 0,
-                "skipped": 0,
-                "durations": [],
-            }
+Strongest Habit:
+{analysis['best_task']}
 
-        if item.get("completed"):
+Needs Improvement:
+{analysis['worst_task']}
 
-            patterns[task]["completed"] += 1
+Task Analysis:
 
-            if item.get("actual_duration"):
+"""
 
-                patterns[task]["durations"].append(
-                    item["actual_duration"]
-                )
-
-        else:
-
-            patterns[task]["skipped"] += 1
-
-    if not patterns:
-
-        return "No previous history."
-
-    text = "User Behaviour History:\n\n"
-
-    for task, stats in patterns.items():
-
-        average_duration = None
-
-        if stats["durations"]:
-
-            average_duration = round(
-                sum(stats["durations"])
-                /
-                len(stats["durations"]),
-                1
-            )
+    for item in insights:
 
         text += (
-            f"- {task}: "
-            f"Completed {stats['completed']} times, "
-            f"Skipped {stats['skipped']} times, "
-            f"Average Duration = {average_duration} minutes.\n"
+            f"Task: {item['task']}\n"
+            f"- Completion Rate: {item['completion_rate']}%\n"
+            f"- Average Duration: {item['average_duration']} minutes\n"
+            f"- Recommendation: {item['recommendation']}\n\n"
         )
 
     return text

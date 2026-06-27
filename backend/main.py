@@ -1,14 +1,19 @@
 from google import genai
 from dotenv import load_dotenv
 import os
-import json
 from fastapi import FastAPI
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
-import json
 from memory import save_task_result, build_ai_context
-from memory import build_ai_context
+from learning_engine import analyze_patterns
+from scheduler import get_free_slots,find_slot,parse_time
+import json
+from yumee_agent import yumee_agent
+
+conversation_state = {
+    "waiting_for_time": False
+}
 
 app = FastAPI()
 app.add_middleware(
@@ -44,6 +49,7 @@ class Goal(BaseModel):
 
 
 class HardConstraint(BaseModel):
+    day: str
     name: str
     start_time: str
     end_time: str
@@ -59,6 +65,17 @@ class UserData(BaseModel):
     hard_constraints: list[HardConstraint]
     soft_constraints: list
     goals: list[Goal]
+
+class AskYumeeRequest(BaseModel):
+    task: str
+    goal: str
+    question: str
+
+class YumeeRequest(BaseModel):
+    message: str
+
+class YumeeResponse(BaseModel):
+    reply: str
 
 def get_days(times_per_week):
 
@@ -120,55 +137,9 @@ def get_days(times_per_week):
 
     return []
 
-def get_free_slots(
-    wake_time,
-    sleep_time,
-    calendar_events
-):
 
-    free_slots = []
 
-    wake = datetime.strptime(wake_time, "%H:%M")
-    sleep = datetime.strptime(sleep_time, "%H:%M")
 
-    constraints = sorted(
-        calendar_events,
-        key=lambda x: x.start_time
-    )
-
-    current = wake
-
-    for constraint in constraints:
-
-        start = datetime.strptime(
-            constraint.start_time,
-            "%H:%M"
-        )
-
-        end = datetime.strptime(
-            constraint.end_time,
-            "%H:%M"
-        )
-
-        if current < start:
-
-            free_slots.append({
-                "label": label_slot(current),
-                "start": current,
-                "end": start
-            })
-
-        current = max(current, end)
-
-    if current < sleep:
-
-        free_slots.append({
-            "label": label_slot(current),
-            "start": current,
-            "end": sleep
-        })
-
-    return free_slots
 
 def label_slot(start_time):
 
@@ -293,6 +264,33 @@ class GoalPlanResponse(BaseModel):
 @app.post("/generate-schedule")
 def generate_schedule(data: UserData):
 
+    analysis = analyze_patterns()
+    day_free_slots = {}
+
+    days = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+    ]
+
+
+    for day in days:
+        constraints = [
+            c
+            for c in data.hard_constraints
+            if c.day == day
+        ]
+
+        day_free_slots[day] = get_free_slots(
+            data.wake_time,
+            data.sleep_time,
+            constraints,
+        )
+
     schedule = []
 
     if data.hard_constraints:
@@ -319,26 +317,82 @@ def generate_schedule(data: UserData):
 
     color_index = 0
 
+    for event in data.hard_constraints:
+        schedule.append(
+            {
+                "day": event.day,
+                "title": event.name,
+                "start": event.start_time,
+                "end": event.end_time,
+                "tag": "Commitment",
+                "color": "slate",
+                "completed": False,
+                "locked": True,
+            }
+        )
     for goal in data.goals:
 
         for task in goal.tasks:
 
-            selected_days = get_days(task.times_per_week)
+            task_insight = next(
+                (
+                    item
+                    for item in analysis["insights"]
+                    if item["task"] == task.name
+                ),
+                None,
+            )
+
+            duration = task.duration
+            times_per_week = task.times_per_week
+
+            if task_insight:
+
+                rate = task_insight["completion_rate"]
+
+                if rate < 40:
+
+                    duration = max(
+                        30,
+                        duration - 15,
+                    )
+
+                    times_per_week = max(
+                        1,
+                        times_per_week - 1,
+                    )
+
+                elif rate > 90:
+
+                    duration += 15
+
+                    times_per_week = min(
+                        7,
+                        times_per_week + 1,
+                    )
+
+            selected_days = get_days(
+                times_per_week
+            )
 
             for day in selected_days:
 
-                start_time = day_times[day]
-
-                end_time = start_time + timedelta(
-                    minutes=task.duration
+                slot = find_slot(
+                    day_free_slots[day],
+                    duration,
                 )
+
+                if slot is None:
+                    continue
+
+                start_str, end_str = slot
 
                 schedule.append(
                     {
                         "day": day,
                         "title": task.name,
-                        "start": start_time.strftime("%H:%M"),
-                        "end": end_time.strftime("%H:%M"),
+                        "start": start_str,
+                        "end": end_str,
                         "tag": goal.name,
                         "color": color_cycle[
                             color_index % len(color_cycle)
@@ -349,11 +403,52 @@ def generate_schedule(data: UserData):
 
                 color_index += 1
 
-                day_times[day] = end_time
+    wake = parse_time(data.wake_time)
+    sleep = parse_time(data.sleep_time)
+
+    print("WAKE =", wake)
+    print("SLEEP =", sleep)
+    for day in days:
+        # Midnight -> Wake
+        schedule.append(
+            {
+                "day": day,
+                "title": "Sleep",
+                "start": "00:00",
+                "end": wake,
+                "tag": "Rest",
+                "color": "blue",
+                "completed": False,
+                "locked": True,
+            }
+        )
+
+        # Sleep -> Midnight
+        schedule.append(
+            {
+                "day": day,
+                "title": "Sleep",
+                "start": sleep,
+                "end": "23:59",
+                "tag": "Rest",
+                "color": "blue",
+                "completed": False,
+                "locked": True,
+            }
+        )
+
+    print("========== GENERATED SCHEDULE ==========")
+    print("TOTAL TASKS:", len(schedule))
+
+    for task in schedule:
+        print(task)
 
     with open("schedule.json", "w") as f:
+
         json.dump(
-            {"tasks": schedule},
+            {
+                "tasks": schedule
+            },
             f,
             indent=4,
         )
@@ -557,6 +652,52 @@ Return JSON only.
 
     return json.loads(text)
 
+@app.post("/ask-yumee")
+def ask_yumee(data: AskYumeeRequest):
+
+    memory_context = build_ai_context()
+
+    prompt = f"""
+You are Yumee, an intelligent AI executive assistant.
+
+The user is asking about one of their scheduled tasks.
+
+Task:
+{data.task}
+
+Goal:
+{data.goal}
+
+User Behaviour History:
+{memory_context}
+
+User Question:
+{data.question}
+
+Answer like a supportive productivity coach.
+
+Rules:
+
+- Be concise.
+- Be encouraging.
+- Use the user's history if relevant.
+- If the user often skips similar tasks,
+  recommend a smaller session instead of skipping.
+- If the user has no history,
+  give general productivity advice.
+
+Return only the answer.
+"""
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+    )
+
+    return {
+        "answer": response.text.strip()
+    }
+
 @app.get("/schedule")
 def get_schedule():
 
@@ -578,4 +719,22 @@ def complete_task(data: dict):
 
     return {
         "message": "Task completed successfully."
+    }
+
+@app.get("/insights")
+def get_insights():
+
+    analysis = analyze_patterns()
+
+    return analysis
+
+
+
+@app.post("/yumee-chat", response_model=YumeeResponse)
+def yumee_chat(data: YumeeRequest):
+
+    result = yumee_agent(data.message)
+
+    return {
+        "reply": result.reply
     }
