@@ -3,17 +3,19 @@ from dotenv import load_dotenv
 import os
 from fastapi import FastAPI
 from pydantic import BaseModel
-from datetime import datetime, timedelta
+from datetime import timedelta
 from fastapi.middleware.cors import CORSMiddleware
 from memory import save_task_result, build_ai_context
 from learning_engine import analyze_patterns
 from scheduler import get_free_slots,find_slot,parse_time
 import json
 from yumee_agent import yumee_agent
+from services.conflict_detector import find_conflicts
+from typing import TypedDict, List
+from services.conversation_state import conversation_state
 
-conversation_state = {
-    "waiting_for_time": False
-}
+
+
 
 app = FastAPI()
 app.add_middleware(
@@ -75,6 +77,16 @@ class YumeeRequest(BaseModel):
     message: str
 
 class YumeeResponse(BaseModel):
+    reply: str
+
+class YumeeState(TypedDict):
+    user_message: str
+    intent: str
+    activity: str
+    day: str
+    time: str
+    waiting_for_time: bool
+    conflicts: list
     reply: str
 
 def get_days(times_per_week):
@@ -728,13 +740,71 @@ def get_insights():
 
     return analysis
 
-
+demo_schedule = [
+    {
+        "title": "DSA Practice",
+        "day": "Friday",
+        "start": "17:00",
+        "end": "18:30",
+    },
+    {
+        "title": "Hackathon",
+        "day": "Friday",
+        "start": "19:00",
+        "end": "21:00",
+    },
+]
 
 @app.post("/yumee-chat", response_model=YumeeResponse)
 def yumee_chat(data: YumeeRequest):
 
     result = yumee_agent(data.message)
 
-    return {
-        "reply": result.reply
-    }
+    print(result)
+    print(result.data)
+
+    # ---------------------------------
+    # Check schedule conflicts
+    # ---------------------------------
+    if result.action == "check_conflicts":
+
+        start = result.data["time"]
+        end = "21:00"  # Temporary
+
+        conflicts = find_conflicts(
+            demo_schedule,
+            "Friday",
+            start,
+            end,
+        )
+
+        if len(conflicts) == 0:
+
+            return YumeeResponse(
+                reply="You're free during that time."
+            )
+
+        # Save conflicts for later
+        conversation_state["conflicts"] = conflicts
+        conversation_state["stage"] = "waiting_for_reschedule"
+
+        names = ", ".join(
+            task["title"] for task in conflicts
+        )
+
+        return YumeeResponse(
+            reply=f"I found conflicts with: {names}. Would you like me to reschedule them?"
+        )
+
+    # ---------------------------------
+    # User accepted rescheduling
+    # ---------------------------------
+    if result.action == "reschedule_tasks":
+
+        return YumeeResponse(
+            reply="I'm finding the best available slot..."
+        )
+
+    return YumeeResponse(
+        reply=result.reply
+    )
