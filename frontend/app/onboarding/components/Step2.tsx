@@ -12,12 +12,12 @@ export default function Step2({ next }: Props) {
   const [customTime, setCustomTime] = useState("");
 
   const options = [
-    "5–6 AM",
-    "6–7 AM",
-    "7–8 AM",
-    "8–9 AM",
-    "Custom",
-  ];
+  "5-6 AM",
+  "6-7 AM",
+  "7-8 AM",
+  "8-9 AM",
+  "Custom",
+];
 
   return (
     <>

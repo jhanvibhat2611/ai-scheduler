@@ -28,7 +28,13 @@ function timeToMinutes(time: string) {
   return h * 60 + m;
 }
 
-export default function Timeline() {
+type Props = {
+  selectedDay: string;
+};
+
+export default function Timeline({
+  selectedDay,
+}: Props) {
   const [tasks, setTasks] = useState<any[]>([]);
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -95,24 +101,44 @@ export default function Timeline() {
         <div
           className="absolute"
           style={{
-            left: 170,
-            right: 32,
+            left: 130,
+            right: 10,
             top: 24,
           }}
-        >
-          {tasks.map((task: any) => {
-            const startMinutes =
-              timeToMinutes(task.start) - START_HOUR * 60;
+          >
+          {tasks
+              .filter((task) => task.day === selectedDay)
+              .map((task: any,index) => {
+            let startMinutes =
+              timeToMinutes(task.start);
 
-            const endMinutes =
-              timeToMinutes(task.end) - START_HOUR * 60;
+            let endMinutes =
+              timeToMinutes(task.end);
 
+            // Clip anything before 6 AM
+            startMinutes = Math.max(
+              startMinutes,
+              START_HOUR * 60
+            );
+
+            // Ignore tasks that finish before 6 AM
+            if (endMinutes <= START_HOUR * 60) {
+              return null;
+            }
+
+            startMinutes -= START_HOUR * 60;
+            endMinutes -= START_HOUR * 60;
             const top =
               (startMinutes / 60) * PIXELS_PER_HOUR;
 
             const height =
               ((endMinutes - startMinutes) / 60) *
               PIXELS_PER_HOUR;
+
+            console.log(task.title);
+            console.log(task.start, task.end);
+            console.log(startMinutes, endMinutes);
+            console.log(height);
 
             return (
               <div
@@ -121,6 +147,11 @@ export default function Timeline() {
                 style={{
                   top,
                   height,
+                  minHeight: "42px",
+                  left: "0px",
+                  right: "0px",
+                  zIndex: task.title === "Sleep" ? 0 : 10,
+
                 }}
               >
                 <ScheduleCard

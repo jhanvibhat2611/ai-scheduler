@@ -14,7 +14,8 @@ export default function FloatingYumee() {
       text-white
       text-xl
       shadow-xl
-      hover:scale-105
+      hover:scale-1
+      05
       transition
       "
     >

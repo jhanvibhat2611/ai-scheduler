@@ -222,71 +222,82 @@ export default function Step6({
 
       )}
 
-      <button
-          onClick={() =>
-            onSave({
+<button
+  onClick={() =>
+    onSave({
 
-              commitment,
+      commitment,
 
-              sameTime,
+      sameTime,
 
-              days: sameTime
+      days: sameTime
 
-                ? days.map((day) => ({
+        ? days.map((day) => ({
 
-                    day,
+            day:
+              day === "Mon" ? "Monday" :
+              day === "Tue" ? "Tuesday" :
+              day === "Wed" ? "Wednesday" :
+              day === "Thu" ? "Thursday" :
+              day === "Fri" ? "Friday" :
+              day === "Sat" ? "Saturday" :
+              "Sunday",
 
-                    start: convertTo24Hour(
-                      hour,
-                      minute,
-                      period
-                    ),
+            start: convertTo24Hour(
+              hour,
+              minute,
+              period
+            ),
 
-                    end: convertTo24Hour(
-                      endHour,
-                      endMinute,
-                      endPeriod
-                    ),
+            end: convertTo24Hour(
+              endHour,
+              endMinute,
+              endPeriod
+            ),
 
-                  }))
+          }))
 
-                : days.map((day) => ({
+        : days.map((day) => ({
 
-                    day,
+            day:
+              day === "Mon" ? "Monday" :
+              day === "Tue" ? "Tuesday" :
+              day === "Wed" ? "Wednesday" :
+              day === "Thu" ? "Thursday" :
+              day === "Fri" ? "Friday" :
+              day === "Sat" ? "Saturday" :
+              "Sunday",
 
-                    start: convertTo24Hour(
-                      dayTimes[day]?.startHour ?? "09",
-                      dayTimes[day]?.startMinute ?? "00",
-                      dayTimes[day]?.startPeriod ?? "AM"
-                    ),
+            start: convertTo24Hour(
+              dayTimes[day]?.startHour ?? "09",
+              dayTimes[day]?.startMinute ?? "00",
+              dayTimes[day]?.startPeriod ?? "AM"
+            ),
 
-                    end: convertTo24Hour(
-                      dayTimes[day]?.endHour ?? "05",
-                      dayTimes[day]?.endMinute ?? "00",
-                      dayTimes[day]?.endPeriod ?? "PM"
-                    ),
+            end: convertTo24Hour(
+              dayTimes[day]?.endHour ?? "05",
+              dayTimes[day]?.endMinute ?? "00",
+              dayTimes[day]?.endPeriod ?? "PM"
+            ),
 
-                  })),
+          })),
 
-            })
-          }
-          className="
-            w-full
-            mt-12
-            bg-violet-600
-            hover:bg-violet-500
-            transition
-            py-4
-            rounded-2xl
-            text-lg
-            font-semibold
-          "
-        >
-          Continue
-        </button>
-
-    </div>
-
+    })
+  }
+  className="
+    w-full
+    mt-12
+    bg-violet-600
+    hover:bg-violet-500
+    transition
+    py-4
+    rounded-2xl
+    text-lg
+    font-semibold
+  "
+>
+  Continue
+</button>
+</div>
   );
-
 }

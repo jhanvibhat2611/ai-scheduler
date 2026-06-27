@@ -3,7 +3,15 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 
-export default function TopDateBar() {
+type Props = {
+  selectedDay: string;
+  setSelectedDay: (day: string) => void;
+};
+
+export default function TopDateBar({
+  selectedDay,
+  setSelectedDay,
+}: Props) {
   const today = new Date();
 
   const [weekOffset, setWeekOffset] = useState(0);
@@ -25,7 +33,10 @@ export default function TopDateBar() {
 
       return {
         fullDate: date,
-        day: date
+        day: date.toLocaleDateString("en-US", {
+          weekday: "long",
+        }),
+        shortDay: date
           .toLocaleDateString("en-US", {
             weekday: "short",
           })
@@ -40,22 +51,10 @@ export default function TopDateBar() {
     });
   }, [weekOffset]);
 
-  const [selected, setSelected] = useState(
-    week.findIndex(
-      (d) =>
-        d.date === today.getDate() &&
-        d.month ===
-          today
-            .toLocaleDateString("en-US", {
-              month: "short",
-            })
-            .toUpperCase()
-    )
-  );
-
   return (
     <div className="sticky top-0 z-20 bg-[#0B1120] border-b border-slate-800">
       <div className="flex items-center gap-5 px-8 py-5">
+
         <button
           onClick={() => setWeekOffset((prev) => prev - 1)}
           className="h-12 w-12 rounded-xl bg-[#182133] hover:bg-slate-700 transition flex items-center justify-center"
@@ -64,10 +63,12 @@ export default function TopDateBar() {
         </button>
 
         <div className="flex-1 flex justify-center gap-4 overflow-hidden">
-          {week.map((item, index) => (
+
+          {week.map((item) => (
+
             <button
-              key={index}
-              onClick={() => setSelected(index)}
+              key={item.day + item.date}
+              onClick={() => setSelectedDay(item.day)}
               className={`
                 min-w-[96px]
                 rounded-3xl
@@ -76,20 +77,21 @@ export default function TopDateBar() {
                 transition-all
                 duration-300
                 ${
-                  selected === index
+                  selectedDay === item.day
                     ? "bg-violet-600 shadow-xl shadow-violet-600/40 scale-105"
                     : "bg-[#182133] hover:bg-slate-700"
                 }
               `}
             >
+
               <p
                 className={`text-sm font-semibold tracking-wider ${
-                  selected === index
+                  selectedDay === item.day
                     ? "text-white"
                     : "text-slate-400"
                 }`}
               >
-                {item.day}
+                {item.shortDay}
               </p>
 
               <p className="text-4xl font-bold mt-2 text-white">
@@ -98,25 +100,29 @@ export default function TopDateBar() {
 
               <p
                 className={`mt-1 text-xs tracking-widest ${
-                  selected === index
+                  selectedDay === item.day
                     ? "text-violet-100"
                     : "text-slate-500"
                 }`}
               >
                 {item.month}
               </p>
+
             </button>
+
           ))}
+
         </div>
 
         <button
           onClick={() => {
             setWeekOffset(0);
 
-            const jsDay = today.getDay();
-            const mondayIndex = jsDay === 0 ? 6 : jsDay - 1;
-
-            setSelected(mondayIndex);
+            setSelectedDay(
+              today.toLocaleDateString("en-US", {
+                weekday: "long",
+              })
+            );
           }}
           className="flex items-center gap-2 rounded-xl bg-[#182133] hover:bg-slate-700 transition px-5 py-3"
         >
@@ -130,6 +136,7 @@ export default function TopDateBar() {
         >
           <ChevronRight size={22} />
         </button>
+
       </div>
     </div>
   );

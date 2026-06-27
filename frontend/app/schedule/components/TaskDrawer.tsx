@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import {
   X,
   Clock3,
@@ -10,7 +12,10 @@ import {
   RotateCcw,
 } from "lucide-react";
 
-import { completeTask } from "@/lib/api";
+import {
+  completeTask,
+  askYumee,
+} from "@/lib/api";
 
 type Task = {
   title: string;
@@ -30,6 +35,11 @@ export default function TaskDrawer({
   open,
   onClose,
 }: Props) {
+
+  const [question, setQuestion] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+
   return (
     <>
       {/* Overlay */}
@@ -52,6 +62,7 @@ export default function TaskDrawer({
           bg-[#111827]
           border-l border-slate-800
           transition-transform duration-300
+          overflow-y-auto
           ${
             open
               ? "translate-x-0"
@@ -63,7 +74,9 @@ export default function TaskDrawer({
           <>
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-800 p-7">
+
               <div>
+
                 <h2 className="text-3xl font-bold text-white">
                   {task.title}
                 </h2>
@@ -71,6 +84,7 @@ export default function TaskDrawer({
                 <p className="mt-2 text-slate-400">
                   {task.start} — {task.end}
                 </p>
+
               </div>
 
               <button
@@ -79,12 +93,14 @@ export default function TaskDrawer({
               >
                 <X />
               </button>
+
             </div>
 
             {/* Content */}
-            <div className="space-y-7 p-7">
+            <div className="space-y-7 p-7 pb-44">
 
               <div className="rounded-2xl bg-[#182133] p-5">
+
                 <div className="flex items-center gap-3">
                   <Clock3 className="text-violet-400" />
                   <span className="text-slate-300">
@@ -95,9 +111,11 @@ export default function TaskDrawer({
                 <p className="mt-3 text-xl font-semibold text-white">
                   {task.start} - {task.end}
                 </p>
+
               </div>
 
               <div className="rounded-2xl bg-[#182133] p-5">
+
                 <div className="flex items-center gap-3">
                   <Target className="text-violet-400" />
                   <span className="text-slate-300">
@@ -108,9 +126,11 @@ export default function TaskDrawer({
                 <p className="mt-3 font-semibold text-white">
                   {task.tag}
                 </p>
+
               </div>
 
               <div className="rounded-2xl bg-[#182133] p-5">
+
                 <div className="flex items-center gap-3">
                   <BookOpen className="text-violet-400" />
                   <span className="text-slate-300">
@@ -123,29 +143,85 @@ export default function TaskDrawer({
                   <li>• YouTube Playlist</li>
                   <li>• Practice Problems</li>
                 </ul>
+
               </div>
 
+              {/* Yumee AI */}
+
               <div className="rounded-2xl border border-violet-700/40 bg-gradient-to-br from-violet-600/20 to-[#182133] p-5">
+
                 <div className="flex items-center gap-3">
+
                   <Sparkles className="text-violet-300" />
 
                   <span className="font-semibold text-violet-200">
-                    Yumee Suggestion
+                    Ask Yumee
                   </span>
+
                 </div>
 
-                <p className="mt-4 leading-7 text-slate-300">
-                  Based on your previous productivity,
-                  this task is best completed without
-                  interruptions. Consider enabling Focus
-                  Mode.
-                </p>
+                <textarea
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  placeholder="Ask Yumee anything..."
+                  className="mt-5 w-full rounded-xl bg-[#0F172A] p-3 text-white outline-none"
+                  rows={3}
+                />
+
+                <button
+                  onClick={async () => {
+
+                        if (!question.trim()) return;
+
+                        setLoading(true);
+
+                        try {
+
+                            const response = await askYumee({
+
+                                task: task.title,
+                                goal: task.tag,
+                                question,
+
+                            });
+
+                            setAiResponse(response.answer);
+
+                        } catch (error) {
+
+                            console.error(error);
+
+                            setAiResponse(
+                                "Sorry, I couldn't reach Yumee right now."
+                            );
+
+                        }
+
+                        setLoading(false);
+
+                    }}
+                  className="mt-4 w-full rounded-xl bg-violet-600 py-3 font-semibold transition hover:bg-violet-500"
+                >
+                  {loading ? "Thinking..." : "Ask Yumee"}
+                </button>
+
+                {aiResponse && (
+                  <div className="mt-5 rounded-xl bg-[#0F172A] p-4">
+
+                    <p className="whitespace-pre-wrap text-slate-300">
+                      {aiResponse}
+                    </p>
+
+                  </div>
+                )}
+
               </div>
 
             </div>
 
             {/* Footer */}
-            <div className="absolute bottom-0 left-0 right-0 border-t border-slate-800 bg-[#111827] p-6">
+
+            <div className="fixed bottom-0 right-0 w-[430px] border-t border-slate-800 bg-[#111827] p-6">
 
               <div className="grid grid-cols-3 gap-3">
 
@@ -193,6 +269,7 @@ export default function TaskDrawer({
               </div>
 
             </div>
+
           </>
         )}
       </div>

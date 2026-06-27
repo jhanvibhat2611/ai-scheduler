@@ -63,3 +63,27 @@ export async function completeTask(data: any) {
 
   return await response.json();
 }
+
+export async function askYumee(data: {
+  task: string;
+  goal: string;
+  question: string;
+}) {
+
+  const response = await fetch(
+    `${API_URL}/ask-yumee`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to contact Yumee.");
+  }
+
+  return await response.json();
+}

@@ -16,6 +16,9 @@ import { db } from "@/lib/firebase";
 import {
   collection,
   addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
 } from "firebase/firestore";
 
 import {
@@ -217,66 +220,73 @@ export default function OnboardingPage() {
           )}
 
           {step === 8 && (
-            <Step8
-              goalPlans={goalPlans}
-              next={async (editedPlans) => {
+  <Step8
+    goalPlans={goalPlans}
+    next={async (editedPlans) => {
 
-                try {
+      try {
 
-                  const response = await generateSchedule({
+        console.log("Wake:", wakeTime);
+        console.log("Sleep:", sleepTime);
 
-                    wake_time: wakeTime,
-                    sleep_time: sleepTime,
+        const response = await generateSchedule({
 
-                    hard_constraints: commitmentSchedule.flatMap((item: any) =>
-                      item.days.map((d: any) => ({
-                        name: item.commitment,
-                        start_time: d.start,
-                        end_time: d.end,
-                      }))
-                    ),
+          wake_time: wakeTime,
+          sleep_time: sleepTime,
 
-                    soft_constraints: [],
+          hard_constraints: commitmentSchedule.flatMap((item: any) =>
+          item.days.map((d: any) => ({
+            day: d.day,
+            name: item.commitment,
+            start_time: d.start,
+            end_time: d.end,
+          }))
+        ),
 
-                    goals: editedPlans.map((goal) => ({
+          soft_constraints: [],
 
-                      name: goal.goal,
+          goals: editedPlans.map((goal) => ({
+            name: goal.goal,
+            tasks: goal.tasks,
+          })),
 
-                      tasks: goal.tasks,
+        });
 
-                    })),
+        console.log("Generated Schedule");
+        console.log(response);
 
-                  });
+        const tasksRef = collection(db, "tasks");
 
-                  console.log("Generated Schedule");
+        const snapshot = await getDocs(tasksRef);
 
-                  console.log(response);
+        for (const document of snapshot.docs) {
+          await deleteDoc(doc(db, "tasks", document.id));
+        }
 
-                  for (const task of response.tasks) {
-                    await addDoc(collection(db, "tasks"), task);
-                  }
+        for (const task of response.tasks) {
+          await addDoc(tasksRef, task);
+        }
 
-                  alert("🎉 Schedule saved to Firebase!");
+        alert("🎉 Schedule saved to Firebase!");
 
-                  router.push("/schedule");
+        router.push("/schedule");
 
-                } catch (error) {
+      } catch (error) {
 
-                  console.error(error);
+        console.error(error);
 
-                  alert("Failed to generate schedule.");
+        alert("Failed to generate schedule.");
 
-                }
+      }
 
-              }}
-            />
-          )}
+    }}
+  />
+)}
 
-        </div>
+</div>
 
-      </div>
+</div>
 
-    </main>
-  );
-
+</main>
+);
 }

@@ -1,11 +1,15 @@
 "use client";
 
-export default function TodayHeader() {
-  const today = new Date();
+type Props = {
+  selectedDay: string;
+  taskCount: number;
+};
 
-  const weekday = today.toLocaleDateString("en-US", {
-    weekday: "long",
-  });
+export default function TodayHeader({
+  selectedDay,
+  taskCount,
+}: Props) {
+  const today = new Date();
 
   const month = today.toLocaleDateString("en-US", {
     month: "long",
@@ -25,12 +29,9 @@ export default function TodayHeader() {
           </p>
 
           <h1 className="mt-2 text-4xl font-bold text-white">
-            {weekday}, {date} {month}
+            {selectedDay}, {date} {month}
           </h1>
 
-          <p className="mt-3 text-slate-400">
-            You have <span className="text-white font-semibold">8 tasks</span> planned today.
-          </p>
 
         </div>
 

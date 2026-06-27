@@ -3,7 +3,7 @@ type Props = {
   start: string;
   end: string;
   tag: string;
-  color?: "violet" | "green" | "orange" | "blue";
+  color?: string;
   onClick?: () => void;
 };
 
@@ -12,7 +12,7 @@ export default function ScheduleCard({
   start,
   end,
   tag,
-  color = "violet",
+  color,
   onClick,
 }: Props) {
   const colors = {
@@ -38,19 +38,21 @@ export default function ScheduleCard({
     },
   };
 
-  const theme = colors[color];
+  const theme =
+    colors[color as keyof typeof colors] ?? colors.violet;
 
   return (
     <button
       onClick={onClick}
       className={`
         w-full
+        h-full
         text-left
         rounded-2xl
         border-l-4
         ${theme.border}
         ${theme.bg}
-        p-4
+        p-3
         shadow-lg
         backdrop-blur-sm
         hover:scale-[1.02]
@@ -59,17 +61,25 @@ export default function ScheduleCard({
         transition-all
         duration-300
         cursor-pointer
+        overflow-hidden
+        flex
+        flex-col
+        justify-between
       `}
     >
-      <h3 className="text-lg font-semibold text-white">
-        {title}
-      </h3>
+      <div>
+        <h3 className="text-base font-semibold text-white">
+          {title}
+        </h3>
 
-      <p className="mt-1 text-sm text-slate-300">
-        {start} – {end}
-      </p>
+        {title !== "Sleep" && (
+          <p className="mt-1 text-sm text-slate-300">
+            {start} – {end}
+          </p>
+        )}
+      </div>
 
-      <div className="mt-3 inline-flex">
+      <div className="mt-2 inline-flex">
         <span
           className={`
             ${theme.badge}
