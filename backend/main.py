@@ -1,4 +1,9 @@
+# TODO:
+# Replace demo_schedule with Firestore tasks before final submission.
+
 from google import genai
+
+
 from dotenv import load_dotenv
 import os
 from fastapi import FastAPI
@@ -13,7 +18,12 @@ from yumee_agent import yumee_agent
 from services.conflict_detector import find_conflicts
 from typing import TypedDict, List
 from services.conversation_state import conversation_state
+from services.rescheduler import find_next_available_slot, to_minutes
+from learning_engine import analyze_patterns
 
+from firebase_db import db
+from services.date_utils import normalize_day
+from services.date_utils import normalize_date
 
 
 
@@ -585,71 +595,91 @@ def generate_goal_plan(data: GoalPlanRequest):
     memory_context = build_ai_context()
 
     prompt = f"""
-You are Yumee, an AI executive assistant.
+    You are Yumee, an AI executive assistant.
 
-User Behaviour History:
+    User Behaviour History:
 
-{memory_context}
+    {memory_context}
 
-Use this history to personalize your recommendations.
+    Use this history to personalize future schedules. Adapt task durations, weekly frequency, and recommendations based on the user's historical behaviour whenever possible.
 
-Guidelines:
+    Adaptive Scheduling Rules:
 
-- If the user frequently skips long sessions, break them into shorter sessions.
-- If the user consistently completes a task, you may increase its frequency slightly.
-- If there is no previous history, ignore these instructions.
+    You have been given the user's historical productivity data.
 
-A user has the following goal.
+    You MUST use it while generating the plan.
 
-Goal:
-{data.goal}
+    For each task:
 
-Deadline:
-{data.deadline if data.deadline else "No deadline"}
+    - If the completion rate is below 40%, reduce the task duration by approximately 25% and break it into shorter sessions.
 
-Break this goal into recurring actionable tasks.
+    - If the completion rate is between 40% and 90%, keep the duration unchanged.
 
-For every task provide:
+    - If the completion rate is above 90%, you may increase the duration by around 10% or slightly increase the weekly frequency.
 
-- name
-- duration (minutes)
-- times_per_week
+    - If the user has no previous history for a task, generate a normal recommendation.
 
-Rules:
+    When you modify a task because of previous history, explain that decision in the "reason" field.
 
-- Be realistic.
-- Keep the schedule sustainable.
-- Prefer recurring habits instead of one-time tasks.
-- Suggest only the most important tasks.
-- Return between 3 and 7 tasks.
-- Return ONLY valid JSON.
+    Do not ignore the historical data.
 
-Example:
+    A user has the following goal.
 
-{{
-    "tasks":[
-        {{
-            "name":"DSA Practice",
-            "duration":90,
-            "times_per_week":5
-        }},
-        {{
-            "name":"Projects",
-            "duration":120,
-            "times_per_week":2
-        }},
-        {{
-            "name":"Resume Building",
-            "duration":60,
-            "times_per_week":1
-        }}
-    ]
-}}
+    Goal:
+    {data.goal}
 
-Do NOT use markdown.
+    Deadline:
+    {data.deadline if data.deadline else "No deadline"}
 
-Return JSON only.
-"""
+    Break this goal into recurring actionable tasks.
+
+    For every task provide:
+
+    - name
+    - duration (minutes)
+    - times_per_week
+    - reason
+
+    Rules:
+
+    - Be realistic.
+    - Keep the schedule sustainable.
+    - Prefer recurring habits instead of one-time tasks.
+    - Suggest only the most important tasks.
+    - Return between 3 and 7 tasks.
+    - Return ONLY valid JSON.
+
+    Example:
+
+    {{
+        "tasks": [
+            {{
+                "name": "DSA Practice",
+                "duration": 100,
+                "times_per_week": 5,
+                "reason": "Increased duration because the user consistently completes this task."
+            }},
+            {{
+                "name": "Workout",
+                "duration": 35,
+                "times_per_week": 4,
+                "reason": "Reduced duration because the user frequently skips longer workout sessions."
+            }},
+            {{
+                "name": "Resume Building",
+                "duration": 60,
+                "times_per_week": 1,
+                "reason": "New task with no previous history."
+            }}
+        ]
+    }}
+
+    Do NOT use markdown.
+
+    Do NOT wrap the JSON in ```.
+
+    Return JSON only.
+    """
 
     response = client.models.generate_content(
         model="gemini-2.5-flash",
@@ -662,6 +692,9 @@ Return JSON only.
     text = text.replace("```", "")
     text = text.strip()
 
+    print("\n========== GOAL PLAN ==========")
+    print(text)
+    print("===============================\n")
     return json.loads(text)
 
 @app.post("/ask-yumee")
@@ -763,6 +796,66 @@ def yumee_chat(data: YumeeRequest):
     print(result)
     print(result.data)
 
+    # -------------------------------
+    # Add one-time task
+    # -------------------------------
+    if result.action == "add_task":
+
+        day = normalize_day(result.data["day"])
+        date = normalize_date(result.data["day"])
+
+        start = datetime.strptime(
+            result.data["time"],
+            "%H:%M"
+        )
+
+        end = start + timedelta(minutes=60)
+
+        db.collection("tasks").add({
+
+            "title": result.data["activity"],
+
+            "day": day,
+            "date": date,
+
+            "start": start.strftime("%H:%M"),
+            "end": end.strftime("%H:%M"),
+
+            "tag": "Yumee",
+            "color": "violet",
+
+            "completed": False,
+            "source": "yumee",
+
+        })
+
+        return YumeeResponse(
+            reply=f"Done! I've added '{result.data['activity']}' to your schedule."
+        )
+
+    # -------------------------------
+    # Add recurring event
+    # -------------------------------
+    if result.action == "add_event":
+
+        day = normalize_day(result.data["day"])
+
+        db.collection("events").add({
+
+            "title": result.data["activity"],
+
+            "day": day,
+            "time": result.data["time"],
+
+            "recurring": True,
+            "source": "yumee",
+
+        })
+
+        return YumeeResponse(
+            reply=f"Done! I'll remember '{result.data['activity']}' every {day}."
+        )
+
     # ---------------------------------
     # Check schedule conflicts
     # ---------------------------------
@@ -784,7 +877,6 @@ def yumee_chat(data: YumeeRequest):
                 reply="You're free during that time."
             )
 
-        # Save conflicts for later
         conversation_state["conflicts"] = conflicts
         conversation_state["stage"] = "waiting_for_reschedule"
 
@@ -801,10 +893,41 @@ def yumee_chat(data: YumeeRequest):
     # ---------------------------------
     if result.action == "reschedule_tasks":
 
+        conflicting_task = conversation_state["conflicts"][0]
+
+        duration = (
+            to_minutes(conflicting_task["end"])
+            - to_minutes(conflicting_task["start"])
+        )
+
+        slot = find_next_available_slot(
+            demo_schedule,
+            conflicting_task["day"],
+            result.data["time"],
+            duration,
+        )
+
+        if slot is None:
+
+            return YumeeResponse(
+                reply="I couldn't find a free slot today."
+            )
+
         return YumeeResponse(
-            reply="I'm finding the best available slot..."
+            reply=(
+                f"I can move **{conflicting_task['title']}** "
+                f"to {slot['start']} - {slot['end']}. "
+                "Would you like me to update your schedule?"
+            )
         )
 
     return YumeeResponse(
         reply=result.reply
     )
+
+@app.get("/insights")
+def get_insights():
+
+    analysis = analyze_patterns()
+
+    return analysis
