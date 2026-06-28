@@ -73,7 +73,7 @@ export default function Timeline({
 
   return (
     <>
-      <div className="relative px-8 py-6">
+      <div className="relative rounded-[34px] border border-violet-100 bg-white/85 px-8 py-8 shadow-[0_18px_45px_rgba(139,92,246,0.10)] backdrop-blur-xl">
 
         <CurrentTimeIndicator />
 
@@ -81,16 +81,16 @@ export default function Timeline({
         {hours.map((hour) => (
           <div
             key={hour}
-            className="relative flex h-24 border-b border-slate-800"
+            className="relative flex h-24 border-b border-violet-100"
           >
-            <div className="w-24 flex-shrink-0 pt-1 text-sm text-slate-400">
+            <div className="w-24 flex-shrink-0 pt-1 text-sm font-medium text-gray-500">
               {formatHour(hour)}
             </div>
 
             <div className="relative flex w-8 justify-center">
-              <div className="absolute top-0 bottom-0 w-px bg-slate-700" />
+              <div className="absolute top-0 bottom-0 w-px bg-violet-200" />
 
-              <div className="absolute top-3 h-3 w-3 rounded-full border-2 border-[#0B1120] bg-slate-500" />
+              <div className="absolute top-3 h-3 w-3 rounded-full border-2 border-white bg-violet-500 shadow-lg shadow-violet-300" />
             </div>
 
             <div className="flex-1" />
@@ -143,7 +143,7 @@ export default function Timeline({
             return (
               <div
                 key={`${task.day}-${task.title}-${task.start}-${task.end}`}
-                className="absolute left-0 right-0"
+                className="absolute left-0 right-0 transition-all duration-300 hover:z-30 hover:scale-[1.015]"
                 style={{
                   top,
                   height,

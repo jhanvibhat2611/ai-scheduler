@@ -17,12 +17,12 @@ export default function TaskModal({
       className="
         fixed
         inset-0
-        bg-black/70
-        backdrop-blur-md
         z-50
         flex
         items-center
         justify-center
+        bg-black/35
+        backdrop-blur-lg
         p-6
       "
     >
@@ -30,59 +30,93 @@ export default function TaskModal({
         onClick={(e) => e.stopPropagation()}
         className="
           w-full
-          max-w-lg
-          bg-[#1E293B]
-          rounded-3xl
-          p-8
+          max-w-xl
+          rounded-[32px]
           border
-          border-slate-700
-          shadow-[0_0_60px_rgba(59,130,246,0.15)]
+          border-violet-100
+          bg-white
+          p-8
+          shadow-[0_30px_80px_rgba(109,93,246,0.18)]
         "
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">
-            Create Task
-          </h2>
+        {/* Header */}
+
+        <div className="mb-8 flex items-center justify-between">
+
+          <div>
+
+            <h2 className="text-3xl font-bold text-slate-900">
+              Create Task
+            </h2>
+
+            <p className="mt-1 text-slate-500">
+              Add a new task or let Yumee schedule it automatically.
+            </p>
+
+          </div>
 
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white"
+            className="
+              rounded-full
+              p-2
+              text-slate-400
+              transition
+              hover:bg-violet-50
+              hover:text-violet-600
+            "
           >
             ✕
           </button>
+
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
 
           <input
             placeholder="Task Name"
             className="
               w-full
-              bg-[#0F172A]
+              rounded-2xl
+              border
+              border-violet-100
+              bg-violet-50
               p-4
-              rounded-xl
-              text-white
+              text-slate-800
+              placeholder:text-slate-400
+              outline-none
+              focus:border-violet-400
             "
           />
 
           <input
             placeholder="Duration (minutes)"
+            type="number"
             className="
               w-full
-              bg-[#0F172A]
+              rounded-2xl
+              border
+              border-violet-100
+              bg-violet-50
               p-4
-              rounded-xl
-              text-white
+              text-slate-800
+              placeholder:text-slate-400
+              outline-none
+              focus:border-violet-400
             "
           />
 
           <select
             className="
               w-full
-              bg-[#0F172A]
+              rounded-2xl
+              border
+              border-violet-100
+              bg-violet-50
               p-4
-              rounded-xl
-              text-white
+              text-slate-800
+              outline-none
+              focus:border-violet-400
             "
           >
             <option>Study</option>
@@ -94,10 +128,14 @@ export default function TaskModal({
           <select
             className="
               w-full
-              bg-[#0F172A]
+              rounded-2xl
+              border
+              border-violet-100
+              bg-violet-50
               p-4
-              rounded-xl
-              text-white
+              text-slate-800
+              outline-none
+              focus:border-violet-400
             "
           >
             <option>Low Energy</option>
@@ -108,10 +146,14 @@ export default function TaskModal({
           <select
             className="
               w-full
-              bg-[#0F172A]
+              rounded-2xl
+              border
+              border-violet-100
+              bg-violet-50
               p-4
-              rounded-xl
-              text-white
+              text-slate-800
+              outline-none
+              focus:border-violet-400
             "
           >
             <option>Low Priority</option>
@@ -123,10 +165,14 @@ export default function TaskModal({
             type="date"
             className="
               w-full
-              bg-[#0F172A]
+              rounded-2xl
+              border
+              border-violet-100
+              bg-violet-50
               p-4
-              rounded-xl
-              text-white
+              text-slate-800
+              outline-none
+              focus:border-violet-400
             "
           />
 
@@ -135,47 +181,62 @@ export default function TaskModal({
               flex
               items-center
               justify-between
-              bg-[#0F172A]
-              rounded-xl
-              p-4
+              rounded-2xl
+              border
+              border-violet-100
+              bg-violet-50
+              p-5
             "
           >
             <div>
-              <p className="font-medium text-white">
+
+              <p className="font-semibold text-slate-900">
                 Let Yumee Schedule It ✨
               </p>
 
-              <p className="text-sm text-slate-400">
-                AI chooses the best time automatically
+              <p className="mt-1 text-sm text-slate-500">
+                AI finds the best free slot based on your calendar.
               </p>
+
             </div>
 
             <input
               type="checkbox"
               className="
-                w-5
                 h-5
-                accent-blue-500
+                w-5
+                accent-violet-600
               "
             />
           </div>
 
           <button
             className="
+              mt-2
+              flex
               w-full
-              bg-blue-600
-              hover:bg-blue-500
-              transition
+              items-center
+              justify-center
+              rounded-2xl
+              bg-[#6D5DF6]
               py-4
-              rounded-xl
+              text-lg
               font-semibold
+              text-white
+              shadow-[0_12px_30px_rgba(109,93,246,0.25)]
+              transition-all
+              duration-300
+              hover:-translate-y-1
+              hover:bg-[#5B4CE3]
             "
           >
             Create Task
           </button>
 
         </div>
+
       </div>
+
     </div>
   );
 }

@@ -31,38 +31,45 @@ export default function InsightCard({
 
   return (
     <>
+      {/* Card */}
+
       <div
         onClick={handleOpen}
         className={`
           cursor-pointer
-          rounded-3xl
-          p-6
+          rounded-[32px]
           border
-          transition-all
-          duration-500
-          hover:scale-105
-          hover:rotate-1
-          hover:-translate-y-3
-          hover:shadow-[0_0_60px_rgba(139,92,246,0.45)]
-          animate-[float_6s_ease-in-out_infinite]
-          ${selected ? "scale-110 z-50" : ""}
           ${color}
+          bg-white/90
+          backdrop-blur-xl
+          p-7
+          transition-all
+          duration-300
+          hover:-translate-y-2
+          hover:scale-[1.02]
+          hover:shadow-2xl
+          hover:shadow-violet-200/50
+          ${selected ? "scale-105" : ""}
         `}
       >
-        <div className="h-[300px] flex flex-col items-center justify-center">
-          <div className="text-6xl mb-6">
+        <div className="flex h-[260px] flex-col items-center justify-center">
+
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-violet-50 text-5xl shadow-inner">
             {emoji}
           </div>
 
-          <h2 className="text-2xl font-bold text-center">
+          <h2 className="text-center text-3xl font-bold text-slate-900">
             {title}
           </h2>
 
-          <p className="text-slate-400 mt-4">
+          <p className="mt-4 text-center text-slate-500">
             Tap to reveal ✨
           </p>
+
         </div>
       </div>
+
+      {/* Popup */}
 
       {open && (
         <div
@@ -70,12 +77,12 @@ export default function InsightCard({
           className="
             fixed
             inset-0
-            bg-black/70
-            backdrop-blur-md
             z-50
             flex
             items-center
             justify-center
+            bg-black/40
+            backdrop-blur-md
             p-6
           "
         >
@@ -84,76 +91,76 @@ export default function InsightCard({
             className={`
               relative
               w-full
-              max-w-xl
-              rounded-3xl
-              p-8
+              max-w-2xl
+              rounded-[36px]
               border
-              shadow-[0_0_150px_rgba(139,92,246,0.8)]
+              ${color}
+              bg-white
+              p-10
+              shadow-[0_30px_80px_rgba(124,58,237,0.18)]
               animate-in
               zoom-in-95
               fade-in
-              duration-500
-              ${color}
+              duration-300
             `}
           >
-            {/* Particles */}
-
-            <div className="absolute top-10 right-16 text-violet-400 text-3xl opacity-40 animate-pulse">
-              ✦
-            </div>
-
-            <div className="absolute bottom-12 left-12 text-pink-400 text-2xl opacity-30 animate-bounce">
-              ✧
-            </div>
-
-            <div className="absolute top-1/2 right-8 text-blue-400 opacity-20 animate-ping">
-              ✦
-            </div>
-
             {/* Close */}
 
             <button
               onClick={() => setOpen(false)}
               className="
                 absolute
-                top-4
-                right-4
-                text-slate-400
-                hover:text-white
+                right-6
+                top-6
+                h-10
+                w-10
+                rounded-full
+                bg-slate-100
+                text-slate-500
                 transition
+                hover:bg-violet-100
+                hover:text-violet-600
               "
             >
               ✕
             </button>
 
-            <div className="text-7xl mb-6">
+            {/* Emoji */}
+
+            <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-violet-50 text-6xl">
               {emoji}
             </div>
 
-            <h2 className="text-4xl font-bold mb-4">
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-violet-500">
+              Productivity Insight
+            </p>
+
+            <h2 className="mt-3 text-4xl font-bold text-slate-900">
               {title}
             </h2>
 
-            <p className="text-5xl font-bold mb-6">
+            <h3 className="mt-5 text-6xl font-bold text-violet-600">
               {value}
-            </p>
+            </h3>
 
-            <p className="text-xl text-slate-300 leading-relaxed">
+            <p className="mt-8 text-lg leading-8 text-slate-600">
               {description}
             </p>
 
-            <div className="mt-8">
-              <div className="bg-white/10 rounded-xl p-4">
-                <p className="text-violet-300 font-semibold">
-                  Yumee Insight ✨
-                </p>
+            <div className="mt-10 rounded-3xl border border-violet-100 bg-gradient-to-r from-violet-50 to-fuchsia-50 p-6">
 
-                <p className="mt-2 text-slate-300">
-                  This pattern was discovered automatically from your
-                  productivity history.
-                </p>
-              </div>
+              <p className="font-semibold text-violet-700">
+                ✨ Yumee Recommendation
+              </p>
+
+              <p className="mt-3 leading-7 text-slate-600">
+                This recommendation was generated automatically from
+                your productivity history. Keep following your routine
+                and Yumee will continuously personalize future insights.
+              </p>
+
             </div>
+
           </div>
         </div>
       )}

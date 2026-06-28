@@ -1,6 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Briefcase,
+  Plus,
+  ArrowRight,
+} from "lucide-react";
 
 type Props = {
   next: (commitments: string[]) => void;
@@ -30,9 +35,7 @@ export default function Step4({ next }: Props) {
         selected.filter((c) => c !== item)
       );
 
-    }
-
-    else {
+    } else {
 
       setSelected([
         ...selected,
@@ -63,76 +66,88 @@ export default function Step4({ next }: Props) {
 
   }
 
-  function handleContinue() {
-
-    next(selected);
-
-  }
-
   return (
-    <>
 
-      <h2 className="text-4xl font-bold text-white text-center">
-        What commitments do you have every week?
+    <div className="text-center">
+
+      <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100">
+
+        <Briefcase
+          size={30}
+          className="text-violet-600"
+        />
+
+      </div>
+
+      <h2 className="text-4xl font-bold text-slate-900">
+        What fills your week?
       </h2>
 
-      <p className="text-slate-400 text-center mt-3">
-        Select everything that applies.
+      <p className="mt-4 text-lg leading-8 text-slate-500">
+        Select all of your recurring commitments.
+        Yumee will protect these in your schedule.
       </p>
 
-      <div className="flex flex-wrap gap-3 justify-center mt-10">
+      <div className="mt-10 flex flex-wrap justify-center gap-3">
 
-        {selected.map((item) => (
+        {defaultCommitments.map((item) => {
 
-          <button
-            key={item}
-            onClick={() => toggleCommitment(item)}
-            className="
-              px-5
-              py-3
-              rounded-full
-              border
-              bg-violet-600
-              border-violet-600
-              text-white
-              transition
-            "
-          >
-            {item}
-          </button>
+          const active = selected.includes(item);
 
-        ))}
+          return (
 
-        {defaultCommitments
-          .filter((item) => !selected.includes(item))
+            <button
+              key={item}
+              onClick={() => toggleCommitment(item)}
+              className={`
+                rounded-full
+                px-6
+                py-3
+                font-medium
+                transition-all
+                duration-300
+                ${
+                  active
+                    ? "bg-[#6D5DF6] text-white shadow-lg"
+                    : "border border-violet-100 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50"
+                }
+              `}
+            >
+              {item}
+            </button>
+
+          );
+
+        })}
+
+        {selected
+          .filter((item) => !defaultCommitments.includes(item))
           .map((item) => (
 
             <button
               key={item}
               onClick={() => toggleCommitment(item)}
               className="
-                px-5
-                py-3
                 rounded-full
-                border
-                border-slate-700
-                bg-[#0F172A]
-                text-slate-300
-                hover:border-violet-500
-                transition
+                bg-[#6D5DF6]
+                px-6
+                py-3
+                font-medium
+                text-white
+                shadow-lg
               "
             >
               {item}
             </button>
 
-        ))}
+          ))}
 
       </div>
 
       <div className="mt-10">
 
-        <label className="block text-white mb-3 font-medium">
-          Any others?
+        <label className="mb-3 block text-left font-semibold text-slate-700">
+          Anything else?
         </label>
 
         <div className="flex gap-3">
@@ -143,15 +158,17 @@ export default function Step4({ next }: Props) {
             placeholder="Dance, Therapy, Volunteering..."
             className="
               flex-1
-              bg-[#0F172A]
+              rounded-2xl
               border
-              border-slate-700
-              rounded-xl
+              border-violet-100
+              bg-white
               p-4
-              text-white
-              placeholder:text-slate-500
+              text-slate-700
+              placeholder:text-slate-400
+              focus:border-violet-400
               focus:outline-none
-              focus:border-violet-500
+              focus:ring-4
+              focus:ring-violet-100
             "
           />
 
@@ -159,50 +176,67 @@ export default function Step4({ next }: Props) {
             onClick={addCustomCommitments}
             disabled={!other.trim()}
             className={`
+              flex
+              items-center
+              justify-center
+              rounded-2xl
               px-6
-              rounded-xl
-              font-semibold
-              transition
+              transition-all
               ${
                 other.trim()
-                  ? "bg-violet-600 hover:bg-violet-500 text-white"
-                  : "bg-slate-700 text-slate-400 cursor-not-allowed"
+                  ? "bg-[#6D5DF6] text-white hover:bg-[#5F4EEB]"
+                  : "cursor-not-allowed bg-slate-200 text-slate-400"
               }
             `}
           >
-            Add
+
+            <Plus size={20} />
+
           </button>
 
         </div>
 
-        <p className="text-slate-500 text-sm mt-2">
+        <p className="mt-2 text-left text-sm text-slate-400">
           Separate multiple commitments with commas.
         </p>
 
       </div>
 
       <button
-        onClick={handleContinue}
         disabled={selected.length === 0}
+        onClick={() => next(selected)}
         className={`
-          mt-10
+          mt-12
+          flex
           w-full
-          py-4
+          items-center
+          justify-center
+          gap-3
           rounded-2xl
+          py-4
           text-lg
           font-semibold
-          transition
+          transition-all
+          duration-300
           ${
-            selected.length > 0
-              ? "bg-violet-600 hover:bg-violet-500 text-white"
-              : "bg-slate-700 text-slate-400 cursor-not-allowed"
+            selected.length
+              ? "bg-[#6D5DF6] text-white shadow-[0_12px_30px_rgba(109,93,246,0.28)] hover:bg-[#5F4EEB] hover:-translate-y-1"
+              : "cursor-not-allowed bg-slate-200 text-slate-400"
           }
         `}
       >
+
         Continue
+
+        <ArrowRight
+          size={18}
+          strokeWidth={2.5}
+        />
+
       </button>
 
-    </>
+    </div>
+
   );
 
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CalendarDays, ArrowRight } from "lucide-react";
 
 import TimePicker from "./TimePicker";
 
@@ -92,46 +93,60 @@ export default function Step6({
 
     <div>
 
-      <h2 className="text-4xl font-bold text-center text-white">
-        {commitment}
-      </h2>
+<div className="text-center">
 
-      <p className="text-center text-slate-400 mt-3">
-        Choose the time for this commitment.
-      </p>
+  <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100">
+    <CalendarDays
+      size={30}
+      className="text-violet-600"
+    />
+  </div>
 
-      <div className="mt-8 bg-[#0F172A] rounded-2xl p-4">
+  <span className="inline-flex rounded-full bg-violet-100 px-4 py-2 text-sm font-semibold text-violet-700">
+    {commitment}
+  </span>
 
-        <p className="text-violet-400 text-sm mb-2">
-          Days
-        </p>
+  <h2 className="mt-6 text-4xl font-bold text-slate-900">
+    What time does this happen?
+  </h2>
 
-        <div className="flex flex-wrap gap-2">
+  <p className="mx-auto mt-4 max-w-lg text-lg leading-8 text-slate-500">
+    Tell Yumee when this commitment starts and ends.
+  </p>
 
-          {days.map((day) => (
+</div>
 
-            <span
-              key={day}
-              className="px-4 py-2 rounded-full bg-violet-600 text-white text-sm"
-            >
-              {day}
-            </span>
+ <div className="mt-10 rounded-3xl border border-violet-100 bg-violet-50 p-6">
 
-          ))}
+  <p className="mb-4 text-left text-sm font-semibold uppercase tracking-wide text-violet-600">
+    Days
+  </p>
 
-        </div>
+  <div className="flex flex-wrap gap-3">
 
-      </div>
+    {days.map((day) => (
 
-      {sameTime && (
+      <span
+        key={day}
+        className="rounded-full bg-[#6D5DF6] px-4 py-2 text-sm font-medium text-white shadow-sm"
+      >
+        {day}
+      </span>
 
-        <>
+    ))}
 
-          <div className="mt-10">
+  </div>
 
-            <h3 className="text-white font-semibold text-lg mb-5">
-              Start Time
-            </h3>
+</div>
+
+{sameTime && (
+
+  <>
+    <div className="mt-10">
+
+      <h3 className="mb-5 text-lg font-semibold text-slate-800">
+        Start Time
+      </h3>
 
             <TimePicker
               hour={hour}
@@ -145,8 +160,7 @@ export default function Step6({
           </div>
 
           <div className="mt-10">
-
-            <h3 className="text-white font-semibold text-lg mb-5">
+            <h3 className="mb-5 text-lg font-semibold text-slate-800">
               End Time
             </h3>
 
@@ -176,13 +190,13 @@ export default function Step6({
               className="bg-[#0F172A] rounded-2xl p-6 border border-slate-700"
             >
 
-              <h3 className="text-white font-semibold text-xl mb-6">
-                {day}
-              </h3>
+            <h3 className="mb-6 text-xl font-bold text-slate-900">
+              {day}
+            </h3>
 
               <div>
 
-                <p className="text-slate-400 mb-3">
+                <p className="mb-3 font-medium text-slate-600">
                   Start Time
                 </p>
 
@@ -199,7 +213,7 @@ export default function Step6({
 
               <div className="mt-8">
 
-                <p className="text-slate-400 mb-3">
+                <p className="mb-3 font-medium text-slate-600">
                   End Time
                 </p>
 
@@ -225,48 +239,43 @@ export default function Step6({
 <button
   onClick={() =>
     onSave({
-
       commitment,
-
       sameTime,
-
       days: sameTime
-
         ? days.map((day) => ({
-
             day:
-              day === "Mon" ? "Monday" :
-              day === "Tue" ? "Tuesday" :
-              day === "Wed" ? "Wednesday" :
-              day === "Thu" ? "Thursday" :
-              day === "Fri" ? "Friday" :
-              day === "Sat" ? "Saturday" :
-              "Sunday",
+              day === "Mon"
+                ? "Monday"
+                : day === "Tue"
+                ? "Tuesday"
+                : day === "Wed"
+                ? "Wednesday"
+                : day === "Thu"
+                ? "Thursday"
+                : day === "Fri"
+                ? "Friday"
+                : day === "Sat"
+                ? "Saturday"
+                : "Sunday",
 
-            start: convertTo24Hour(
-              hour,
-              minute,
-              period
-            ),
-
-            end: convertTo24Hour(
-              endHour,
-              endMinute,
-              endPeriod
-            ),
-
+            start: convertTo24Hour(hour, minute, period),
+            end: convertTo24Hour(endHour, endMinute, endPeriod),
           }))
-
         : days.map((day) => ({
-
             day:
-              day === "Mon" ? "Monday" :
-              day === "Tue" ? "Tuesday" :
-              day === "Wed" ? "Wednesday" :
-              day === "Thu" ? "Thursday" :
-              day === "Fri" ? "Friday" :
-              day === "Sat" ? "Saturday" :
-              "Sunday",
+              day === "Mon"
+                ? "Monday"
+                : day === "Tue"
+                ? "Tuesday"
+                : day === "Wed"
+                ? "Wednesday"
+                : day === "Thu"
+                ? "Thursday"
+                : day === "Fri"
+                ? "Friday"
+                : day === "Sat"
+                ? "Saturday"
+                : "Sunday",
 
             start: convertTo24Hour(
               dayTimes[day]?.startHour ?? "09",
@@ -279,24 +288,13 @@ export default function Step6({
               dayTimes[day]?.endMinute ?? "00",
               dayTimes[day]?.endPeriod ?? "PM"
             ),
-
           })),
-
     })
   }
-  className="
-    w-full
-    mt-12
-    bg-violet-600
-    hover:bg-violet-500
-    transition
-    py-4
-    rounded-2xl
-    text-lg
-    font-semibold
-  "
+  className="mt-12 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#6D5DF6] py-4 text-lg font-semibold text-white shadow-[0_12px_30px_rgba(109,93,246,0.25)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#5B4CE3]"
 >
   Continue
+  <ArrowRight size={18} strokeWidth={2.5} />
 </button>
 </div>
   );

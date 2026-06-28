@@ -1,6 +1,10 @@
 "use client";
 
+
+
 import { useState } from "react";
+
+import { ArrowRight, Sparkles } from "lucide-react";
 
 type Goal = {
   title: string;
@@ -41,6 +45,7 @@ export default function Step7({ next }: Props) {
 
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [goals, setGoals] = useState<Goal[]>([]);
 
@@ -81,13 +86,13 @@ export default function Step7({ next }: Props) {
 
   return (
     <>
-      <h2 className="text-4xl font-bold text-center text-white">
-        What are you working towards?
-      </h2>
+         <h2 className="text-4xl font-bold text-center text-slate-900">
+          What are you working towards?
+        </h2>
 
-      <p className="text-center text-slate-400 mt-3">
-        Yumee will break every goal into actionable tasks.
-      </p>
+        <p className="mx-auto mt-4 max-w-lg text-center text-lg leading-8 text-slate-500">
+          Yumee will break every goal into clear, actionable tasks and schedule them automatically.
+        </p>
 
       {/* Examples */}
 
@@ -97,15 +102,18 @@ export default function Step7({ next }: Props) {
             key={item}
             onClick={() => setGoal(item)}
             className="
-              px-4
-              py-2
-              rounded-full
-              bg-[#0F172A]
-              border
-              border-slate-700
-              text-slate-300
-              hover:border-violet-500
-              transition
+            rounded-full
+            border
+            border-violet-100
+            bg-white
+            px-5
+            py-3
+            font-medium
+            text-slate-700
+            transition-all
+            duration-300
+            hover:border-violet-300
+            hover:bg-violet-50
             "
           >
             {item}
@@ -122,173 +130,310 @@ export default function Step7({ next }: Props) {
           placeholder="Enter a goal..."
           className="
             w-full
-            bg-[#0F172A]
+            rounded-2xl
             border
-            border-slate-700
-            rounded-xl
+            border-violet-100
+            bg-white
             p-4
-            text-white
-            placeholder:text-slate-500
+            text-slate-900
+            placeholder:text-slate-400
+            focus:border-[#6D5DF6]
             focus:outline-none
-            focus:border-violet-500
-          "
+            "
         />
 
-        {/* Deadline */}
+{/* Deadline */}
 
-        <div>
-          <p className="text-white mb-3 font-medium">
-            Deadline
-          </p>
+<div>
 
-          <div className="flex gap-4">
-            <button
-              onClick={() => setHasDeadline(false)}
-              className={`flex-1 rounded-xl p-4 border transition ${
-                !hasDeadline
-                  ? "bg-violet-600 border-violet-600"
-                  : "bg-[#0F172A] border-slate-700"
-              }`}
-            >
-              No Deadline
-            </button>
+  <p className="mb-3 font-semibold text-slate-700">
+    Deadline
+  </p>
 
-            <button
-              onClick={() => setHasDeadline(true)}
-              className={`flex-1 rounded-xl p-4 border transition ${
-                hasDeadline
-                  ? "bg-violet-600 border-violet-600"
-                  : "bg-[#0F172A] border-slate-700"
-              }`}
-            >
-              Set Deadline
-            </button>
+  <div className="flex gap-4">
+
+    <button
+      onClick={() => setHasDeadline(false)}
+      className={`flex-1 rounded-2xl border py-4 font-semibold transition-all duration-300 ${
+        !hasDeadline
+          ? "bg-[#6D5DF6] border-[#6D5DF6] text-white shadow-md"
+          : "bg-white border-violet-100 text-slate-700 hover:bg-violet-50"
+      }`}
+    >
+      No Deadline
+    </button>
+
+    <button
+      onClick={() => setHasDeadline(true)}
+      className={`flex-1 rounded-2xl border py-4 font-semibold transition-all duration-300 ${
+        hasDeadline
+          ? "bg-[#6D5DF6] border-[#6D5DF6] text-white shadow-md"
+          : "bg-white border-violet-100 text-slate-700 hover:bg-violet-50"
+      }`}
+    >
+      Set Deadline
+    </button>
+
+  </div>
+
+</div>
+
+{hasDeadline && (
+
+  <div className="mt-5 grid grid-cols-2 gap-4">
+
+    <select
+      value={month}
+      onChange={(e) => setMonth(e.target.value)}
+      className="
+        rounded-2xl
+        border
+        border-violet-100
+        bg-white
+        p-4
+        text-slate-700
+        focus:border-[#6D5DF6]
+        focus:outline-none
+      "
+    >
+      <option value="">Month</option>
+
+      {months.map((m) => (
+
+        <option key={m} value={m}>
+          {m}
+        </option>
+
+      ))}
+
+    </select>
+
+    <input
+      type="number"
+      min="2026"
+      max="2100"
+      value={year}
+      onChange={(e) => setYear(e.target.value)}
+      placeholder="Year"
+      className="
+        rounded-2xl
+        border
+        border-violet-100
+        bg-white
+        p-4
+        text-slate-700
+        placeholder:text-slate-400
+        focus:border-[#6D5DF6]
+        focus:outline-none
+      "
+    />
+
+  </div>
+
+)}
+
+<button
+  onClick={addGoal}
+  className="
+    mt-6
+    flex
+    w-full
+    items-center
+    justify-center
+    gap-2
+    rounded-2xl
+    bg-[#6D5DF6]
+    py-4
+    font-semibold
+    text-white
+    shadow-[0_12px_30px_rgba(109,93,246,0.25)]
+    transition-all
+    duration-300
+    hover:-translate-y-1
+    hover:bg-[#5B4CE3]
+  "
+>
+  Add Goal
+</button>
+
+</div>
+
+{/* Goals */}
+
+{goals.length > 0 && (
+
+  <div className="mt-10 space-y-4">
+
+    {goals.map((goal, index) => (
+
+      <div
+        key={index}
+        className="
+          flex
+          items-center
+          justify-between
+          rounded-2xl
+          border
+          border-violet-100
+          bg-violet-50
+          p-5
+          shadow-sm
+        "
+      >
+
+        <div className="flex items-center gap-4">
+
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#6D5DF6]/10">
+            🎯
           </div>
+
+          <div>
+
+            <p className="font-semibold text-slate-900">
+              {goal.title}
+            </p>
+
+            <p className="mt-1 text-sm text-slate-500">
+              {goal.deadline ?? "No deadline"}
+            </p>
+
+          </div>
+
         </div>
-
-        {hasDeadline && (
-          <div className="grid grid-cols-2 gap-4">
-            <select
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-              className="
-                bg-[#0F172A]
-                border
-                border-slate-700
-                rounded-xl
-                p-4
-                text-white
-              "
-            >
-              <option value="">Month</option>
-
-              {months.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="number"
-              min="2026"
-              max="2100"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-              placeholder="Year"
-              className="
-                bg-[#0F172A]
-                border
-                border-slate-700
-                rounded-xl
-                p-4
-                text-white
-                placeholder:text-slate-500
-              "
-            />
-          </div>
-        )}
 
         <button
-          onClick={addGoal}
+          onClick={() => removeGoal(index)}
           className="
-            w-full
-            bg-violet-600
-            hover:bg-violet-500
-            transition
-            py-4
             rounded-xl
-            font-semibold
+            px-3
+            py-2
+            text-sm
+            font-medium
+            text-red-500
+            transition
+            hover:bg-red-50
           "
         >
-          Add Goal
+          Remove
         </button>
+
       </div>
 
-      {/* Goals */}
+    ))}
 
-      {goals.length > 0 && (
-        <div className="mt-10 space-y-4">
-          {goals.map((goal, index) => (
-            <div
-              key={index}
-              className="
-                bg-[#0F172A]
-                border
-                border-slate-700
-                rounded-xl
-                p-5
-                flex
-                justify-between
-                items-center
-              "
-            >
-              <div>
-                <p className="font-semibold text-white">
-                  🎯 {goal.title}
-                </p>
+  </div>
 
-                <p className="text-slate-400 text-sm mt-1">
-                  {goal.deadline ?? "No Deadline"}
-                </p>
-              </div>
+)}
+{loading && (
+  <div
+    className="
+      fixed
+      inset-0
+      z-[999]
+      flex
+      items-center
+      justify-center
+      bg-white/35
+      backdrop-blur-md
+      animate-in
+      fade-in
+      duration-300
+    "
+  >
+    <div
+      className="
+        w-[420px]
+        rounded-[34px]
+        bg-white/90
+        backdrop-blur-xl
+        shadow-2xl
+        p-10
+        text-center
+        border
+        border-violet-100
+      "
+    >
+      {/* Magic Circle */}
 
-              <button
-                onClick={() => removeGoal(index)}
-                className="
-                  text-red-400
-                  hover:text-red-300
-                  transition
-                  text-sm
-                "
-              >
-                Remove
-              </button>
-            </div>
-          ))}
+      <div className="relative mx-auto mb-8 flex h-28 w-28 items-center justify-center">
+
+        <div className="absolute inset-0 rounded-full border-2 border-violet-200 animate-spin duration-[7000ms]" />
+
+        <div className="absolute h-20 w-20 rounded-full bg-violet-100/70 blur-xl" />
+
+        <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg">
+
+          <Sparkles
+            className="text-violet-500 animate-pulse"
+            size={34}
+          />
+
         </div>
-      )}
 
-      <button
-        disabled={goals.length === 0}
-        onClick={() => next(goals)}
-        className={`
-          w-full
-          mt-10
-          py-4
-          rounded-2xl
-          font-semibold
-          transition
+      </div>
 
-          ${
-            goals.length > 0
-              ? "bg-violet-600 hover:bg-violet-500 text-white"
-              : "bg-slate-700 text-slate-400 cursor-not-allowed"
-          }
-        `}
-      >
-        Continue
-      </button>
+      <h3 className="text-3xl font-bold text-slate-900">
+        Breaking your goals
+        <br />
+        into tasks...
+      </h3>
+
+      <p className="mt-5 text-slate-500 leading-7">
+        Yumee is understanding your goals,
+        identifying milestones and creating
+        your personalized roadmap.
+      </p>
+
+      <div className="mt-8 flex justify-center gap-2">
+        <span className="h-3 w-3 rounded-full bg-violet-400 animate-bounce" />
+        <span className="h-3 w-3 rounded-full bg-violet-300 animate-bounce [animation-delay:200ms]" />
+        <span className="h-3 w-3 rounded-full bg-violet-200 animate-bounce [animation-delay:400ms]" />
+      </div>
+
+      <p className="mt-6 text-sm text-violet-500 font-medium">
+        This usually takes a few seconds ✨
+      </p>
+    </div>
+  </div>
+)}
+<button
+  disabled={goals.length === 0 || loading}
+  onClick={async () => {
+  setLoading(true);
+  await next(goals);
+  setLoading(false);
+}}
+  className={`
+
+    mt-10
+    flex
+    w-full
+    items-center
+    justify-center
+    gap-2
+    rounded-2xl
+    py-4
+    text-lg
+    font-semibold
+    transition-all
+    duration-300
+
+    ${
+      goals.length > 0
+        ? "bg-[#6D5DF6] text-white shadow-[0_12px_30px_rgba(109,93,246,0.25)] hover:-translate-y-1 hover:bg-[#5B4CE3]"
+        : "cursor-not-allowed bg-slate-200 text-slate-400"
+    }
+
+  `}
+>
+  Continue
+
+  <ArrowRight
+    size={18}
+    strokeWidth={2.5}
+  />
+
+</button>
     </>
   );
 }

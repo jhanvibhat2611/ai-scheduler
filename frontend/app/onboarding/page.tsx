@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Bug } from "lucide-react";
+import { Sparkles } from "lucide-react";
+
+import { allura } from "@/app/fonts";
 
 import Step1 from "./components/Step1";
 import Step2 from "./components/Step2";
@@ -11,6 +15,7 @@ import Step5 from "./components/Step5";
 import Step6 from "./components/Step6";
 import Step7 from "./components/Step7";
 import Step8 from "./components/Step8";
+
 import { db } from "@/lib/firebase";
 
 import {
@@ -44,28 +49,119 @@ export default function OnboardingPage() {
   const [goalPlans, setGoalPlans] = useState<any[]>([]);
 
   return (
-    <main className="min-h-screen bg-[#0F172A] flex items-center justify-center px-6">
 
-      <div className="w-full max-w-2xl">
+    <main
+      className="
+      min-h-screen
+      flex
+      items-center
+      justify-center
+      px-6
+      py-16
+      bg-gradient-to-br
+      from-white
+      via-violet-50
+      to-purple-100
+      relative
+      overflow-hidden
+    "
+    >
 
-        <div className="text-center mb-10">
+      {/* Decorative blobs */}
 
-          <h1 className="text-4xl font-bold text-white">
-            Honestli
-          </h1>
+      <div className="absolute -top-32 -left-24 h-72 w-72 rounded-full bg-violet-200/40 blur-3xl" />
 
-          <p className="text-slate-400 mt-2">
-            Powered by Yumee
-          </p>
+      <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-fuchsia-200/30 blur-3xl" />
 
-        </div>
+      <div className="absolute top-40 right-24 text-violet-200 text-6xl">
+        ✦
+      </div>
+
+      <div className="absolute bottom-32 left-20 text-pink-200 text-5xl">
+        ✧
+      </div>
+
+      <div className="w-full max-w-2xl relative z-10">
+
+        {/* Logo */}
+
+<div className="mb-14 flex flex-col items-center">
+
+  <div className="relative w-[360px] flex justify-center">
+
+    {/* Flight Path */}
+
+    <svg
+      className="absolute -top-8 left-4 w-[300px] h-14 pointer-events-none"
+      viewBox="0 0 300 60"
+      fill="none"
+    >
+      <path
+        d="
+          M10 35
+          C60 0 120 0 170 35
+          S250 55 285 18
+        "
+        stroke="#8B5CF6"
+        strokeWidth="2"
+        strokeDasharray="6 6"
+        strokeLinecap="round"
+      />
+    </svg>
+
+    {/* Bee */}
+
+    <Bug
+      size={22}
+      strokeWidth={2}
+      className="
+        absolute
+        -top-7
+        right-7
+        text-yellow-500
+        rotate-12
+        drop-shadow-sm
+      "
+    />
+
+    {/* Brand */}
+
+    <h1
+      className={`
+        ${allura.className}
+        text-7xl
+        md:text-8xl
+        text-violet-700
+        leading-none
+      `}
+    >
+      Honestli
+    </h1>
+
+  </div>
+
+  <p className="mt-5 text-lg font-medium text-slate-600">
+    Powered by
+    <span className="ml-1 text-violet-600 font-semibold">
+      Yumee ✨
+    </span>
+  </p>
+
+  <p className="mt-3 max-w-lg text-center text-slate-500 leading-8">
+    Your AI productivity companion that learns your habits,
+    builds your schedule, and helps you achieve your goals.
+  </p>
+
+</div>
+
+        {/* Progress */}
 
         <div className="mb-8">
 
-          <div className="flex justify-between text-sm text-slate-400 mb-2">
+          <div className="flex justify-between text-sm text-slate-500 mb-3">
 
             <span>
-              Step {step} of 8
+              ✨ Step {step} of 8
             </span>
 
             <span>
@@ -74,10 +170,18 @@ export default function OnboardingPage() {
 
           </div>
 
-          <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+          <div className="h-2 rounded-full bg-violet-100 overflow-hidden">
 
             <div
-              className="h-full bg-violet-500 transition-all duration-500"
+              className="
+              h-full
+              rounded-full
+              bg-gradient-to-r
+              from-violet-500
+              to-fuchsia-500
+              transition-all
+              duration-500
+              "
               style={{
                 width: `${(step / 8) * 100}%`,
               }}
@@ -87,7 +191,19 @@ export default function OnboardingPage() {
 
         </div>
 
-        <div className="bg-[#1E293B] rounded-3xl border border-slate-700 p-12">
+        {/* Main Card */}
+
+        <div
+          className="
+          rounded-[36px]
+          border
+          border-violet-100
+          bg-white/90
+          backdrop-blur-xl
+          shadow-[0_20px_60px_rgba(109,40,217,0.08)]
+          p-12
+        "
+        >
 
           {step === 1 && (
             <Step1 next={() => setStep(2)} />
@@ -144,37 +260,44 @@ export default function OnboardingPage() {
             <Step6
               key={currentCommitment}
               commitment={commitments[currentCommitment]}
-              days={commitmentSchedule[currentCommitment]?.days ?? []}
+              days={
+                commitmentSchedule[currentCommitment]?.days ?? []
+              }
               sameTime={
-                commitmentSchedule[currentCommitment]?.sameTime ?? true
+                commitmentSchedule[currentCommitment]?.sameTime ??
+                true
               }
               onSave={(timeData: any) => {
 
-                  const updated = [...commitmentSchedule];
+                const updated = [...commitmentSchedule];
 
-                  updated[currentCommitment] = {
-                    ...updated[currentCommitment],
-                    ...timeData,
-                  };
+                updated[currentCommitment] = {
+                  ...updated[currentCommitment],
+                  ...timeData,
+                };
 
-                  setCommitmentSchedule(updated);
+                setCommitmentSchedule(updated);
 
-                  if (currentCommitment === commitments.length - 1) {
+                if (
+                  currentCommitment ===
+                  commitments.length - 1
+                ) {
 
-                    setStep(7);
+                  setStep(7);
 
-                  } else {
+                } else {
 
-                    setCurrentCommitment((prev) => prev + 1);
-                    setStep(5);
+                  setCurrentCommitment((prev) => prev + 1);
 
-                  }
+                  setStep(5);
 
-                }}
+                }
+
+              }}
             />
           )}
 
-                    {step === 7 && (
+          {step === 7 && (
             <Step7
               next={async (goalData) => {
 
@@ -186,10 +309,11 @@ export default function OnboardingPage() {
 
                   try {
 
-                    const response = await generateGoalPlan(
-                      goal.title,
-                      goal.deadline
-                    );
+                    const response =
+                      await generateGoalPlan(
+                        goal.title,
+                        goal.deadline
+                      );
 
                     generatedPlans.push({
                       goal: goal.title,
@@ -220,73 +344,83 @@ export default function OnboardingPage() {
           )}
 
           {step === 8 && (
-  <Step8
-    goalPlans={goalPlans}
-    next={async (editedPlans) => {
 
-      try {
+            <Step8
+              goalPlans={goalPlans}
+              next={async (editedPlans) => {
 
-        console.log("Wake:", wakeTime);
-        console.log("Sleep:", sleepTime);
+                try {
 
-        const response = await generateSchedule({
+                  const response =
+                    await generateSchedule({
 
-          wake_time: wakeTime,
-          sleep_time: sleepTime,
+                      wake_time: wakeTime,
 
-          hard_constraints: commitmentSchedule.flatMap((item: any) =>
-          item.days.map((d: any) => ({
-            day: d.day,
-            name: item.commitment,
-            start_time: d.start,
-            end_time: d.end,
-          }))
-        ),
+                      sleep_time: sleepTime,
 
-          soft_constraints: [],
+                      hard_constraints:
+                        commitmentSchedule.flatMap(
+                          (item: any) =>
+                            item.days.map((d: any) => ({
+                              day: d.day,
+                              name: item.commitment,
+                              start_time: d.start,
+                              end_time: d.end,
+                            }))
+                        ),
 
-          goals: editedPlans.map((goal) => ({
-            name: goal.goal,
-            tasks: goal.tasks,
-          })),
+                      soft_constraints: [],
 
-        });
+                      goals: editedPlans.map((goal) => ({
+                        name: goal.goal,
+                        tasks: goal.tasks,
+                      })),
 
-        console.log("Generated Schedule");
-        console.log(response);
+                    });
 
-        const tasksRef = collection(db, "tasks");
+                  const tasksRef =
+                    collection(db, "tasks");
 
-        const snapshot = await getDocs(tasksRef);
+                  const snapshot =
+                    await getDocs(tasksRef);
 
-        for (const document of snapshot.docs) {
-          await deleteDoc(doc(db, "tasks", document.id));
-        }
+                  for (const document of snapshot.docs) {
 
-        for (const task of response.tasks) {
-          await addDoc(tasksRef, task);
-        }
+                    await deleteDoc(
+                      doc(db, "tasks", document.id)
+                    );
 
-        alert("🎉 Schedule saved to Firebase!");
+                  }
 
-        router.push("/schedule");
+                  for (const task of response.tasks) {
 
-      } catch (error) {
+                    await addDoc(tasksRef, task);
 
-        console.error(error);
+                  }
 
-        alert("Failed to generate schedule.");
 
-      }
 
-    }}
-  />
-)}
+                  router.push("/schedule");
 
-</div>
+                } catch (error) {
 
-</div>
+                  console.error(error);
 
-</main>
-);
+                  alert("Failed to generate schedule.");
+
+                }
+
+              }}
+            />
+
+          )}
+
+        </div>
+
+      </div>
+
+    </main>
+
+  );
+
 }

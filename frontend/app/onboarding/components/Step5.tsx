@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import {
+  CalendarDays,
+  ArrowRight,
+} from "lucide-react";
 
 type Props = {
   commitment: string;
@@ -28,121 +32,151 @@ export default function Step5({
   function toggleDay(day: string) {
 
     if (selectedDays.includes(day)) {
+
       setSelectedDays(
         selectedDays.filter((d) => d !== day)
       );
-    }
 
-    else {
+    } else {
+
       setSelectedDays([
         ...selectedDays,
         day,
       ]);
+
     }
 
   }
 
   return (
-    <div>
 
-      <h2 className="text-4xl font-bold text-center text-white">
+    <div className="text-center">
+
+      <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100">
+
+        <CalendarDays
+          size={30}
+          className="text-violet-600"
+        />
+
+      </div>
+
+      <span className="inline-flex rounded-full bg-violet-100 px-4 py-2 text-sm font-semibold text-violet-700">
+
         {commitment}
+
+      </span>
+
+      <h2 className="mt-6 text-4xl font-bold text-slate-900">
+        When does this happen?
       </h2>
 
-      <p className="text-center text-slate-400 mt-3">
-        Tell Yumee when this commitment usually happens.
+      <p className="mx-auto mt-4 max-w-lg text-lg leading-8 text-slate-500">
+        Select the days when this commitment usually happens.
       </p>
 
       {/* Days */}
 
       <div className="mt-10">
 
-        <p className="text-white font-semibold mb-4">
-          Which days?
+        <p className="mb-4 text-left font-semibold text-slate-700">
+          Days of the week
         </p>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
 
-          {weekDays.map((day) => (
+          {weekDays.map((day) => {
 
-            <button
-              key={day}
-              onClick={() => toggleDay(day)}
-              className={`px-5 py-3 rounded-full border transition
-              ${
-                selectedDays.includes(day)
-                  ? "bg-violet-600 border-violet-600 text-white"
-                  : "bg-[#0F172A] border-slate-700 text-slate-300 hover:border-violet-500"
-              }`}
-            >
-              {day}
-            </button>
+            const active = selectedDays.includes(day);
 
-          ))}
+            return (
+
+              <button
+                key={day}
+                onClick={() => toggleDay(day)}
+                className={`
+                  rounded-full
+                  px-6
+                  py-3
+                  font-medium
+                  transition-all
+                  duration-300
+                  ${
+                    active
+                      ? "bg-[#6D5DF6] text-white shadow-lg"
+                      : "border border-violet-100 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50"
+                  }
+                `}
+              >
+                {day}
+              </button>
+
+            );
+
+          })}
 
         </div>
 
       </div>
 
-      {/* Same Timings */}
+      {/* Same Time */}
 
-      <div className="mt-10">
+{/* Same Time */}
 
-        <p className="text-white font-semibold mb-4">
-          Is the timing the same every selected day?
-        </p>
+<div className="mt-12">
 
-        <div className="grid grid-cols-2 gap-4">
+  <p className="mb-4 text-left font-semibold text-slate-700">
+    Is it at the same time every day?
+  </p>
 
-          <button
-            onClick={() => setSameTime(true)}
-            className={`rounded-xl py-4 border transition font-medium
-            ${
-              sameTime
-                ? "bg-violet-600 border-violet-600 text-white"
-                : "bg-[#0F172A] border-slate-700 text-slate-300 hover:border-violet-500"
-            }`}
-          >
-            Yes
-          </button>
+  <div className="grid grid-cols-2 gap-4">
 
-          <button
-            onClick={() => setSameTime(false)}
-            className={`rounded-xl py-4 border transition font-medium
-            ${
-              !sameTime
-                ? "bg-violet-600 border-violet-600 text-white"
-                : "bg-[#0F172A] border-slate-700 text-slate-300 hover:border-violet-500"
-            }`}
-          >
-            No
-          </button>
+    <button
+      onClick={() => setSameTime(true)}
+      className={`rounded-2xl py-4 font-semibold transition-all duration-300 ${
+        sameTime
+          ? "bg-[#6D5DF6] text-white shadow-lg"
+          : "bg-white border border-violet-100 text-slate-700 hover:bg-violet-50"
+      }`}
+    >
+      Yes
+    </button>
 
-        </div>
+    <button
+      onClick={() => setSameTime(false)}
+      className={`rounded-2xl py-4 font-semibold transition-all duration-300 ${
+        !sameTime
+          ? "bg-[#6D5DF6] text-white shadow-lg"
+          : "bg-white border border-violet-100 text-slate-700 hover:bg-violet-50"
+      }`}
+    >
+      No
+    </button>
 
-      </div>
+  </div>
 
-      {/* Continue */}
+</div>
 
-      <button
-        onClick={() =>
-          onSave({
-            commitment,
-            days: selectedDays,
-            sameTime,
-          })
-        }
-        disabled={selectedDays.length === 0}
-        className={`w-full mt-12 py-4 rounded-2xl text-lg font-semibold transition
-        ${
-          selectedDays.length === 0
-            ? "bg-slate-700 text-slate-400 cursor-not-allowed"
-            : "bg-violet-600 hover:bg-violet-500 text-white"
-        }`}
-      >
-        Continue
-      </button>
+{/* Continue */}
 
+<button
+  onClick={() =>
+    onSave({
+      commitment,
+      days: selectedDays,
+      sameTime,
+    })
+  }
+  disabled={selectedDays.length === 0}
+  className={`mt-12 flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-lg font-semibold transition-all duration-300 ${
+    selectedDays.length > 0
+      ? "bg-[#6D5DF6] hover:bg-[#5B4CE3] text-white shadow-[0_12px_30px_rgba(109,93,246,0.25)]"
+      : "bg-slate-200 text-slate-400 cursor-not-allowed"
+  }`}
+>
+  Continue
+  <ArrowRight size={18} />
+</button>
     </div>
   );
 }
