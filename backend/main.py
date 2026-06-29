@@ -24,6 +24,7 @@ from learning_engine import analyze_patterns
 from firebase_db import db
 from services.date_utils import normalize_day
 from services.date_utils import normalize_date
+from firebase_admin import firestore
 
 
 
@@ -773,20 +774,25 @@ def get_insights():
 
     return analysis
 
-demo_schedule = [
-    {
-        "title": "DSA Practice",
-        "day": "Friday",
-        "start": "17:00",
-        "end": "18:30",
-    },
-    {
-        "title": "Hackathon",
-        "day": "Friday",
-        "start": "19:00",
-        "end": "21:00",
-    },
-]
+def get_schedule_for_day(day):
+
+    docs = db.collection("tasks") \
+        .where("day", "==", day) \
+        .stream()
+
+    schedule = []
+
+    for doc in docs:
+        task = doc.to_dict()
+
+        schedule.append({
+            "title": task["title"],
+            "day": task["day"],
+            "start": task["start"],
+            "end": task["end"],
+        })
+
+    return schedule
 
 @app.post("/yumee-chat", response_model=YumeeResponse)
 def yumee_chat(data: YumeeRequest):
@@ -821,13 +827,22 @@ def yumee_chat(data: YumeeRequest):
             "start": start.strftime("%H:%M"),
             "end": end.strftime("%H:%M"),
 
-            "tag": "Yumee",
-            "color": "violet",
+            "duration": 60,
 
             "completed": False,
+
+            "category": "Personal",
+
+            "autoSchedule": True,
+
             "source": "yumee",
 
+            "createdAt": firestore.SERVER_TIMESTAMP,
+
         })
+
+        conversation_state["stage"] = None
+        conversation_state["intent"] = None
 
         return YumeeResponse(
             reply=f"Done! I've added '{result.data['activity']}' to your schedule."
@@ -852,21 +867,30 @@ def yumee_chat(data: YumeeRequest):
 
         })
 
+        conversation_state["stage"] = None
+        conversation_state["intent"] = None
+
         return YumeeResponse(
             reply=f"Done! I'll remember '{result.data['activity']}' every {day}."
         )
 
-    # ---------------------------------
+    # -------------------------------
     # Check schedule conflicts
-    # ---------------------------------
+    # -------------------------------
     if result.action == "check_conflicts":
 
         start = result.data["time"]
-        end = "21:00"  # Temporary
+
+        start_minutes = to_minutes(start)
+        end = f"{(start_minutes + 60)//60:02d}:{(start_minutes + 60)%60:02d}"
+
+        schedule = get_schedule_for_day(
+            normalize_day(result.data["day"])
+        )
 
         conflicts = find_conflicts(
-            demo_schedule,
-            "Friday",
+            schedule,
+            normalize_day(result.data["day"]),
             start,
             end,
         )
@@ -888,9 +912,9 @@ def yumee_chat(data: YumeeRequest):
             reply=f"I found conflicts with: {names}. Would you like me to reschedule them?"
         )
 
-    # ---------------------------------
-    # User accepted rescheduling
-    # ---------------------------------
+    # -------------------------------
+    # Find a new free slot
+    # -------------------------------
     if result.action == "reschedule_tasks":
 
         conflicting_task = conversation_state["conflicts"][0]
@@ -900,8 +924,12 @@ def yumee_chat(data: YumeeRequest):
             - to_minutes(conflicting_task["start"])
         )
 
+        schedule = get_schedule_for_day(
+            conflicting_task["day"]
+        )
+
         slot = find_next_available_slot(
-            demo_schedule,
+            schedule,
             conflicting_task["day"],
             result.data["time"],
             duration,
@@ -913,11 +941,51 @@ def yumee_chat(data: YumeeRequest):
                 reply="I couldn't find a free slot today."
             )
 
+        conversation_state["pending_slot"] = slot
+        conversation_state["stage"] = "waiting_for_update_confirmation"
+
         return YumeeResponse(
             reply=(
-                f"I can move **{conflicting_task['title']}** "
+                f"I can move '{conflicting_task['title']}' "
                 f"to {slot['start']} - {slot['end']}. "
                 "Would you like me to update your schedule?"
+            )
+        )
+
+    # -------------------------------
+    # User approved update
+    # -------------------------------
+    if result.action == "update_schedule":
+
+        task = conversation_state["conflicts"][0]
+        slot = conversation_state["pending_slot"]
+
+        docs = list(
+            db.collection("tasks")
+            .where("title", "==", task["title"])
+            .where("day", "==", task["day"])
+            .stream()
+        )
+
+        for doc in docs:
+            doc.reference.update({
+                "start": slot["start"],
+                "end": slot["end"],
+                "updatedBy": "Yumee",
+            })
+
+        conversation_state["stage"] = None
+        conversation_state["conflicts"] = []
+        conversation_state["pending_slot"] = None
+        conversation_state["intent"] = None
+        conversation_state["activity"] = None
+        conversation_state["day"] = None
+        conversation_state["time"] = None
+
+        return YumeeResponse(
+            reply=(
+                f"Done! I moved '{task['title']}' "
+                f"to {slot['start']} - {slot['end']}."
             )
         )
 
@@ -925,9 +993,4 @@ def yumee_chat(data: YumeeRequest):
         reply=result.reply
     )
 
-@app.get("/insights")
-def get_insights():
 
-    analysis = analyze_patterns()
-
-    return analysis

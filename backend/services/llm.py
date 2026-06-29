@@ -1,11 +1,17 @@
-from langchain_ollama import ChatOllama
+import os
+
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
 import json
 import time
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
-llm = ChatOllama(
-    model="llama3:latest",
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    api_key=os.getenv("GEMINI_API_KEY"),
     temperature=0,
 )
 

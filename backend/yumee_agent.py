@@ -26,27 +26,21 @@ def yumee_agent(message: str):
         conversation_state["stage"] = "idle"
         conversation_state["time"] = normalize_time(message)
 
-        # Schedule change
         if conversation_state["intent"] == "schedule_change":
-
             return AgentResponse(
                 reply="TIME_RECEIVED",
                 action="check_conflicts",
                 data=conversation_state.copy(),
             )
 
-        # One-time task
         if conversation_state["intent"] == "add_task":
-
             return AgentResponse(
                 reply="TIME_RECEIVED",
                 action="add_task",
                 data=conversation_state.copy(),
             )
 
-        # Recurring event
         if conversation_state["intent"] == "add_event":
-
             return AgentResponse(
                 reply="TIME_RECEIVED",
                 action="add_event",
@@ -59,9 +53,10 @@ def yumee_agent(message: str):
 
     if conversation_state["stage"] == "waiting_for_reschedule":
 
-        if message.lower() in [
+        if message.lower().strip() in [
             "yes",
             "yeah",
+            "yep",
             "yup",
             "sure",
             "ok",
@@ -80,6 +75,36 @@ def yumee_agent(message: str):
 
         return AgentResponse(
             reply="Okay! I won't reschedule anything.",
+            action="none",
+            data=conversation_state.copy(),
+        )
+
+    # ---------------------------------
+    # User confirmed final update
+    # ---------------------------------
+
+    if conversation_state["stage"] == "waiting_for_update_confirmation":
+
+        if message.lower().strip() in [
+            "yes",
+            "yeah",
+            "yep",
+            "yup",
+            "sure",
+            "ok",
+            "okay",
+        ]:
+
+            return AgentResponse(
+                reply="UPDATE_CONFIRMATION",
+                action="update_schedule",
+                data=conversation_state.copy(),
+            )
+
+        conversation_state["stage"] = "idle"
+
+        return AgentResponse(
+            reply="Okay! I won't update your schedule.",
             action="none",
             data=conversation_state.copy(),
         )
