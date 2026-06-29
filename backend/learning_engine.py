@@ -1,110 +1,96 @@
 from firebase_db import db
 
 
-from firebase_db import db
-
-
 def analyze_patterns():
 
-    docs = (
-        db.collection("memory")
-        .document("history")
-        .collection("events")
-        .stream()
-    )
+    docs = db.collection("tasks").stream()
 
     tasks = {}
 
     total_completed = 0
-    total_skipped = 0
+    total_tasks = 0
 
     for doc in docs:
 
-        event = doc.to_dict()
+        task = doc.to_dict()
 
-        task = event["task"]
+        title = task["title"]
 
-        if task not in tasks:
-
-            tasks[task] = {
+        if title not in tasks:
+            tasks[title] = {
                 "completed": 0,
-                "skipped": 0,
+                "total": 0,
                 "durations": [],
             }
 
-        if event.get("completed"):
+        tasks[title]["total"] += 1
+        total_tasks += 1
 
-            tasks[task]["completed"] += 1
+        if task.get("completed", False):
+            tasks[title]["completed"] += 1
             total_completed += 1
 
-            if event.get("actual_duration"):
+        if task.get("start") and task.get("end"):
 
-                tasks[task]["durations"].append(
-                    event["actual_duration"]
-                )
+            start_h, start_m = map(int, task["start"].split(":"))
+            end_h, end_m = map(int, task["end"].split(":"))
 
-        else:
+            duration = (
+                (end_h * 60 + end_m)
+                -
+                (start_h * 60 + start_m)
+            )
 
-            tasks[task]["skipped"] += 1
-            total_skipped += 1
+            tasks[title]["durations"].append(duration)
 
     insights = []
 
-    for task, stats in tasks.items():
+    for title, stats in tasks.items():
 
-        total = stats["completed"] + stats["skipped"]
-
-        completion_rate = (
-            round(stats["completed"] / total * 100, 1)
-            if total > 0
-            else 100
+        completion_rate = round(
+            (stats["completed"] / stats["total"]) * 100,
+            1,
         )
 
         average_duration = None
 
         if stats["durations"]:
-
             average_duration = round(
                 sum(stats["durations"])
                 /
                 len(stats["durations"]),
-                1
+                1,
             )
 
-        recommendation = "Keep current schedule."
+        recommendation = "Keep your current schedule."
 
         if completion_rate < 40:
-
             recommendation = (
-                "Move this task to evenings and shorten the duration."
+                "Try scheduling this earlier in the day."
             )
 
         elif completion_rate < 70:
-
             recommendation = (
-                "Try breaking this into smaller sessions."
+                "Break this into shorter sessions."
             )
 
         elif completion_rate > 90:
-
             recommendation = (
                 "Great consistency! Consider increasing the challenge."
             )
 
         insights.append(
             {
-                "task": task,
+                "task": title,
                 "completion_rate": completion_rate,
                 "average_duration": average_duration,
                 "recommendation": recommendation,
             }
         )
 
-    overall_total = total_completed + total_skipped
-
     overall_completion = (
-        round(total_completed / overall_total * 100, 1)
-        if overall_total > 0
+        round((total_completed / total_tasks) * 100, 1)
+        if total_tasks > 0
         else 0
     )
 

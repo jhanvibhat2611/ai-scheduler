@@ -755,6 +755,7 @@ from datetime import datetime
 @app.post("/complete-task")
 def complete_task(data: dict):
 
+    # Save to memory for analytics
     save_task_result(
         task_name=data["task"],
         planned_start=data["planned_start"],
@@ -762,6 +763,20 @@ def complete_task(data: dict):
         completed=True,
         actual_duration=data.get("actual_duration"),
     )
+
+    # Mark task completed in Firestore
+    docs = (
+        db.collection("tasks")
+        .where("title", "==", data["task"])
+        .where("start", "==", data["planned_start"])
+        .where("end", "==", data["planned_end"])
+        .stream()
+    )
+
+    for doc in docs:
+        doc.reference.update({
+            "completed": True
+        })
 
     return {
         "message": "Task completed successfully."

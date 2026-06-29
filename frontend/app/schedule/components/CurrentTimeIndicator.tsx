@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 const START_HOUR = 6;
-const PIXELS_PER_HOUR = 120;
+const PIXELS_PER_HOUR = 96;
 
 export default function CurrentTimeIndicator() {
 
@@ -35,7 +35,9 @@ export default function CurrentTimeIndicator() {
   return (
     <div
       className="absolute left-0 right-0 z-30 pointer-events-none"
-      style={{ top: `${position}px` }}
+      style={{
+          top: `${position + 24}px`,
+        }}
     >
       <div className="flex items-center">
 

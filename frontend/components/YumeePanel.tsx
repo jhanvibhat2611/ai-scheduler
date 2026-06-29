@@ -15,7 +15,7 @@ export default function YumeePanel() {
     {
       sender: "yumee",
       text:
-        "Hi Jhanvi 👋\nI'm Yumee.\nHow can I help you today?",
+        "Hi buddy👋\nI'm Yumee.\nHow can I help you today?",
     },
   ]);
 

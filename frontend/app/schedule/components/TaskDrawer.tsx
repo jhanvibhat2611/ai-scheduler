@@ -59,8 +59,8 @@ export default function TaskDrawer({
       <div
         className={`
           fixed right-0 top-0 z-50 h-screen w-[430px]
-          bg-[#111827]
-          border-l border-slate-800
+          bg-[#FAF8FF]
+          border-l border-violet-100
           transition-transform duration-300
           overflow-y-auto
           ${
@@ -73,15 +73,15 @@ export default function TaskDrawer({
         {task && (
           <>
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 p-7">
+            <div className="flex items-center justify-between border-b border-violet-100 p-7">
 
               <div>
 
-                <h2 className="text-3xl font-bold text-white">
+                <h2 className="text-3xl font-bold text-slate-900">
                   {task.title}
                 </h2>
 
-                <p className="mt-2 text-slate-400">
+                <p className="mt-2 text-slate-500">
                   {task.start} — {task.end}
                 </p>
 
@@ -89,7 +89,7 @@ export default function TaskDrawer({
 
               <button
                 onClick={onClose}
-                className="rounded-xl p-2 transition hover:bg-slate-800"
+                className="rounded-xl p-2 transition hover:bg-violet-100"
               >
                 <X />
               </button>
@@ -114,16 +114,16 @@ export default function TaskDrawer({
 
               </div>
 
-              <div className="rounded-2xl bg-[#182133] p-5">
+              <div className="rounded-2xl bg-white border border-violet-100 p-5">
 
                 <div className="flex items-center gap-3">
                   <Target className="text-violet-400" />
-                  <span className="text-slate-300">
+                  <span className="text-slate-600">
                     Goal
                   </span>
                 </div>
 
-                <p className="mt-3 font-semibold text-white">
+                <p className="mt-3 font-semibold text-slate-900">
                   {task.tag}
                 </p>
 
@@ -148,7 +148,7 @@ export default function TaskDrawer({
 
               {/* Yumee AI */}
 
-              <div className="rounded-2xl border border-violet-700/40 bg-gradient-to-br from-violet-600/20 to-[#182133] p-5">
+              <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-white p-5">
 
                 <div className="flex items-center gap-3">
 
@@ -164,7 +164,7 @@ export default function TaskDrawer({
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   placeholder="Ask Yumee anything..."
-                  className="mt-5 w-full rounded-xl bg-[#0F172A] p-3 text-white outline-none"
+                  className="mt-5 w-full rounded-xl bg-violet-50 text-slate-900 border border-violet-100 outline-none"
                   rows={3}
                 />
 
@@ -206,9 +206,9 @@ export default function TaskDrawer({
                 </button>
 
                 {aiResponse && (
-                  <div className="mt-5 rounded-xl bg-[#0F172A] p-4">
+                  <div className="mt-5 rounded-xl bg-violet-50 border border-violet-100 p-4">
 
-                    <p className="whitespace-pre-wrap text-slate-300">
+                    <p className="whitespace-pre-wrap text-slate-700">
                       {aiResponse}
                     </p>
 
@@ -221,7 +221,7 @@ export default function TaskDrawer({
 
             {/* Footer */}
 
-            <div className="fixed bottom-0 right-0 w-[430px] border-t border-slate-800 bg-[#111827] p-6">
+            <div className="fixed bottom-0 right-0 w-[430px] border-t border-violet-100 bg-[#FAF8FF] p-6">
 
               <div className="grid grid-cols-3 gap-3">
 
@@ -237,7 +237,7 @@ export default function TaskDrawer({
                         actual_duration: null,
                       });
 
-                      alert("✅ Task Completed!");
+
 
                       onClose();
 

@@ -15,7 +15,7 @@ export default function Header() {
         <h1 className="text-5xl font-bold leading-tight text-slate-900">
           Good Evening,
           <span className="block text-violet-600">
-            Jhanvi
+          👋
           </span>
         </h1>
 
