@@ -20,7 +20,6 @@ export default function TimePicker({
   setMinute,
   setPeriod,
 }: Props) {
-
   const hours = useMemo(
     () =>
       Array.from({ length: 12 }, (_, i) =>
@@ -44,8 +43,16 @@ export default function TimePicker({
   };
 
   return (
-    <div className="bg-[#0F172A] rounded-2xl p-8">
-
+    <div
+      className="
+        rounded-3xl
+        border
+        border-violet-100
+        bg-white
+        p-6
+        shadow-[0_15px_40px_rgba(109,93,246,0.10)]
+      "
+    >
       <Picker
         value={value}
         onChange={(val) => {
@@ -54,16 +61,15 @@ export default function TimePicker({
           setPeriod(val.period);
         }}
       >
-
         <Picker.Column name="hour">
           {hours.map((h) => (
             <Picker.Item key={h} value={h}>
               {({ selected }) => (
                 <div
-                  className={`text-3xl py-2 ${
+                  className={`py-3 text-3xl transition-all duration-200 ${
                     selected
-                      ? "text-violet-400 font-bold"
-                      : "text-slate-500"
+                      ? "font-bold text-violet-600 scale-110"
+                      : "text-slate-400"
                   }`}
                 >
                   {h}
@@ -78,10 +84,10 @@ export default function TimePicker({
             <Picker.Item key={m} value={m}>
               {({ selected }) => (
                 <div
-                  className={`text-3xl py-2 ${
+                  className={`py-3 text-3xl transition-all duration-200 ${
                     selected
-                      ? "text-violet-400 font-bold"
-                      : "text-slate-500"
+                      ? "font-bold text-violet-600 scale-110"
+                      : "text-slate-400"
                   }`}
                 >
                   {m}
@@ -96,10 +102,10 @@ export default function TimePicker({
             <Picker.Item key={p} value={p}>
               {({ selected }) => (
                 <div
-                  className={`text-3xl py-2 ${
+                  className={`py-3 text-3xl transition-all duration-200 ${
                     selected
-                      ? "text-violet-400 font-bold"
-                      : "text-slate-500"
+                      ? "font-bold text-violet-600 scale-110"
+                      : "text-slate-400"
                   }`}
                 >
                   {p}
@@ -108,9 +114,7 @@ export default function TimePicker({
             </Picker.Item>
           ))}
         </Picker.Column>
-
       </Picker>
-
     </div>
   );
 }

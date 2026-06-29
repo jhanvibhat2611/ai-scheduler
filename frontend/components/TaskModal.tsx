@@ -1,15 +1,45 @@
 "use client";
 
+import { useState } from "react";
+
 type TaskModalProps = {
   open: boolean;
   onClose: () => void;
+  onCreate: (task: any) => void;
 };
 
 export default function TaskModal({
   open,
   onClose,
+  onCreate,
 }: TaskModalProps) {
+  const [taskName, setTaskName] = useState("");
+  const [duration, setDuration] = useState("");
+  const [category, setCategory] = useState("Study");
+  const [date, setDate] = useState("");
+  const [autoSchedule, setAutoSchedule] = useState(false);
+
   if (!open) return null;
+
+  function handleCreate() {
+    if (!taskName.trim()) return;
+
+    onCreate({
+      taskName,
+      duration: Number(duration),
+      category,
+      date,
+      autoSchedule,
+    });
+
+    setTaskName("");
+    setDuration("");
+    setCategory("Study");
+    setDate("");
+    setAutoSchedule(false);
+
+    onClose();
+  }
 
   return (
     <div
@@ -42,9 +72,7 @@ export default function TaskModal({
         {/* Header */}
 
         <div className="mb-8 flex items-center justify-between">
-
           <div>
-
             <h2 className="text-3xl font-bold text-slate-900">
               Create Task
             </h2>
@@ -52,7 +80,6 @@ export default function TaskModal({
             <p className="mt-1 text-slate-500">
               Add a new task or let Yumee schedule it automatically.
             </p>
-
           </div>
 
           <button
@@ -68,12 +95,13 @@ export default function TaskModal({
           >
             ✕
           </button>
-
         </div>
 
         <div className="space-y-5">
 
           <input
+            value={taskName}
+            onChange={(e) => setTaskName(e.target.value)}
             placeholder="Task Name"
             className="
               w-full
@@ -90,8 +118,10 @@ export default function TaskModal({
           />
 
           <input
-            placeholder="Duration (minutes)"
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
             type="number"
+            placeholder="Duration (minutes)"
             className="
               w-full
               rounded-2xl
@@ -107,6 +137,8 @@ export default function TaskModal({
           />
 
           <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
             className="
               w-full
               rounded-2xl
@@ -125,44 +157,10 @@ export default function TaskModal({
             <option>Personal</option>
           </select>
 
-          <select
-            className="
-              w-full
-              rounded-2xl
-              border
-              border-violet-100
-              bg-violet-50
-              p-4
-              text-slate-800
-              outline-none
-              focus:border-violet-400
-            "
-          >
-            <option>Low Energy</option>
-            <option>Medium Energy</option>
-            <option>High Energy</option>
-          </select>
-
-          <select
-            className="
-              w-full
-              rounded-2xl
-              border
-              border-violet-100
-              bg-violet-50
-              p-4
-              text-slate-800
-              outline-none
-              focus:border-violet-400
-            "
-          >
-            <option>Low Priority</option>
-            <option>Medium Priority</option>
-            <option>High Priority</option>
-          </select>
-
           <input
             type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
             className="
               w-full
               rounded-2xl
@@ -189,7 +187,6 @@ export default function TaskModal({
             "
           >
             <div>
-
               <p className="font-semibold text-slate-900">
                 Let Yumee Schedule It ✨
               </p>
@@ -197,26 +194,20 @@ export default function TaskModal({
               <p className="mt-1 text-sm text-slate-500">
                 AI finds the best free slot based on your calendar.
               </p>
-
             </div>
 
             <input
               type="checkbox"
-              className="
-                h-5
-                w-5
-                accent-violet-600
-              "
+              checked={autoSchedule}
+              onChange={(e) => setAutoSchedule(e.target.checked)}
+              className="h-5 w-5 accent-violet-600"
             />
           </div>
 
           <button
+            onClick={handleCreate}
             className="
-              mt-2
-              flex
               w-full
-              items-center
-              justify-center
               rounded-2xl
               bg-[#6D5DF6]
               py-4
@@ -234,9 +225,7 @@ export default function TaskModal({
           </button>
 
         </div>
-
       </div>
-
     </div>
   );
 }

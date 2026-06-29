@@ -3,25 +3,22 @@
 type Props = {
   selectedDay: string;
   taskCount: number;
+  selectedDate: Date;
 };
 
 export default function TodayHeader({
   selectedDay,
   taskCount,
+  selectedDate,
 }: Props) {
-
-  const today = new Date();
-
-  const month = today.toLocaleDateString("en-US", {
+  const month = selectedDate.toLocaleDateString("en-US", {
     month: "long",
   });
 
-  const date = today.getDate();
+  const date = selectedDate.getDate();
 
   return (
-
     <div className="px-10 pt-10 pb-8">
-
       <div className="flex items-start justify-between">
 
         {/* Left */}
@@ -29,21 +26,14 @@ export default function TodayHeader({
         <div>
 
           <p className="text-sm font-bold uppercase tracking-[0.28em] text-violet-500">
-
             Today's Schedule
-
           </p>
 
           <h1 className="mt-3 text-5xl font-bold tracking-tight text-gray-900">
-
             {selectedDay}, {date} {month}
-
           </h1>
 
           <p className="mt-4 text-lg text-gray-500">
-
-
-
           </p>
 
         </div>
@@ -67,29 +57,20 @@ export default function TodayHeader({
         >
 
           <p className="text-sm font-semibold text-gray-500">
-
             Productivity Score
-
           </p>
 
           <h2 className="mt-2 bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-6xl font-bold text-transparent">
-
             92%
-
           </h2>
 
           <p className="mt-2 text-sm text-gray-400">
-
             Based on today's schedule
-
           </p>
 
         </div>
 
       </div>
-
     </div>
-
   );
-
 }

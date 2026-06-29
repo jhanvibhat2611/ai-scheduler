@@ -10,11 +10,15 @@ import {
 type Props = {
   selectedDay: string;
   setSelectedDay: (day: string) => void;
+  selectedDate: Date;
+  setSelectedDate: (date: Date) => void;
 };
 
 export default function TopDateBar({
   selectedDay,
   setSelectedDay,
+  selectedDate,
+  setSelectedDate,
 }: Props) {
 
   const today = new Date();
@@ -71,16 +75,16 @@ export default function TopDateBar({
         <button
           onClick={() => setWeekOffset((prev) => prev - 1)}
           className="
-          flex h-12 w-12 items-center justify-center
-          rounded-2xl
-          border border-violet-100
-          bg-white
-          shadow-lg shadow-violet-100
-          transition-all
-          duration-300
-          hover:-translate-y-1
-          hover:shadow-xl
-        "
+            flex h-12 w-12 items-center justify-center
+            rounded-2xl
+            border border-violet-100
+            bg-white
+            shadow-lg shadow-violet-100
+            transition-all
+            duration-300
+            hover:-translate-y-1
+            hover:shadow-xl
+          "
         >
           <ChevronLeft
             size={20}
@@ -96,7 +100,10 @@ export default function TopDateBar({
 
             <button
               key={item.day + item.date}
-              onClick={() => setSelectedDay(item.day)}
+              onClick={() => {
+                setSelectedDay(item.day);
+                setSelectedDate(item.fullDate);
+              }}
               className={`
                 min-w-[98px]
                 rounded-[28px]
@@ -107,7 +114,8 @@ export default function TopDateBar({
                 py-5
                 hover:-translate-y-1
                 ${
-                  selectedDay === item.day
+                  selectedDay === item.day &&
+                  selectedDate.toDateString() === item.fullDate.toDateString()
                     ? "border-transparent bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white shadow-2xl shadow-violet-300 scale-105"
                     : "border-violet-100 bg-white text-gray-900 shadow-md hover:shadow-xl hover:border-violet-200"
                 }
@@ -116,7 +124,8 @@ export default function TopDateBar({
 
               <p
                 className={`text-xs font-bold tracking-[0.22em] ${
-                  selectedDay === item.day
+                  selectedDay === item.day &&
+                  selectedDate.toDateString() === item.fullDate.toDateString()
                     ? "text-violet-100"
                     : "text-gray-500"
                 }`}
@@ -130,7 +139,8 @@ export default function TopDateBar({
 
               <p
                 className={`mt-1 text-xs tracking-[0.25em] ${
-                  selectedDay === item.day
+                  selectedDay === item.day &&
+                  selectedDate.toDateString() === item.fullDate.toDateString()
                     ? "text-violet-100"
                     : "text-gray-400"
                 }`}
@@ -157,22 +167,24 @@ export default function TopDateBar({
               })
             );
 
+            setSelectedDate(today);
+
           }}
           className="
-          flex items-center gap-2
-          rounded-2xl
-          border border-violet-100
-          bg-white
-          px-6
-          py-3
-          font-semibold
-          text-violet-700
-          shadow-lg shadow-violet-100
-          transition-all
-          duration-300
-          hover:-translate-y-1
-          hover:shadow-xl
-        "
+            flex items-center gap-2
+            rounded-2xl
+            border border-violet-100
+            bg-white
+            px-6
+            py-3
+            font-semibold
+            text-violet-700
+            shadow-lg shadow-violet-100
+            transition-all
+            duration-300
+            hover:-translate-y-1
+            hover:shadow-xl
+          "
         >
           <CalendarDays size={18} />
           Today
@@ -183,16 +195,16 @@ export default function TopDateBar({
         <button
           onClick={() => setWeekOffset((prev) => prev + 1)}
           className="
-          flex h-12 w-12 items-center justify-center
-          rounded-2xl
-          border border-violet-100
-          bg-white
-          shadow-lg shadow-violet-100
-          transition-all
-          duration-300
-          hover:-translate-y-1
-          hover:shadow-xl
-        "
+            flex h-12 w-12 items-center justify-center
+            rounded-2xl
+            border border-violet-100
+            bg-white
+            shadow-lg shadow-violet-100
+            transition-all
+            duration-300
+            hover:-translate-y-1
+            hover:shadow-xl
+          "
         >
           <ChevronRight
             size={20}

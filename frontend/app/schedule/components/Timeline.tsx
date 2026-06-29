@@ -107,7 +107,12 @@ export default function Timeline({
           }}
           >
           {tasks
-              .filter((task) => task.day === selectedDay)
+              .filter(
+              (task) =>
+                task.day &&
+                task.day.toLowerCase() ===
+                  selectedDay.toLowerCase()
+            )
               .map((task: any,index) => {
             let startMinutes =
               timeToMinutes(task.start);

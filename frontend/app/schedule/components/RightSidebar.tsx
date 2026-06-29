@@ -10,7 +10,6 @@ import {
 export default function RightSidebar() {
   return (
     <div className="space-y-6">
-
       {/* Day Progress */}
 
       <div className="rounded-[30px] border border-violet-100 bg-white/85 backdrop-blur-xl p-6 shadow-xl shadow-violet-100/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
